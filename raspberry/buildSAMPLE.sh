@@ -1,3 +1,5 @@
+#!/bin/bash
+
 PASSWORD=""
 
 OPTION=$1
@@ -11,16 +13,16 @@ SERVER_PASSWORD=$PASSWORD
 CLIENT_PASSWORD=$PASSWORD
 
 function server(){
-    cd server
+    cd server || exit
     ~/.cargo/bin/cross build --target arm-unknown-linux-gnueabihf
-    sshpass -p $SERVER_PASSWORD scp target/arm-unknown-linux-gnueabihf/debug/rasp_lora_server $SERVER_USERNAME@$SERVER_IP:/home/$SERVER_USERNAME/
+    sshpass -p "$SERVER_PASSWORD" scp target/arm-unknown-linux-gnueabihf/debug/rasp_lora_server $SERVER_USERNAME@$SERVER_IP:/home/$SERVER_USERNAME/
     cd ..
 }
 
 function client(){
-    cd client
+    cd client || exit
     ~/.cargo/bin/cross build --target arm-unknown-linux-gnueabihf
-    sshpass -p $CLIENT_PASSWORD scp target/arm-unknown-linux-gnueabihf/debug/rasp_lora_client $CLIENT_USERNAME@$CLIENT_IP:/home/$CLIENT_USERNAME/
+    sshpass -p "$CLIENT_PASSWORD" scp target/arm-unknown-linux-gnueabihf/debug/rasp_lora_client $CLIENT_USERNAME@$CLIENT_IP:/home/$CLIENT_USERNAME/
     cd ..
 }
 
