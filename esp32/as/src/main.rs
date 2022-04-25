@@ -1,29 +1,10 @@
-use oscore::edhoc::{
-    error::{OwnError, OwnOrPeerError},
-    util::build_error_message,
-    PartyR,
-};
 use std::io::{Error, Read, Write};
 use std::net::{TcpListener, TcpStream};
 use twoRatchet::AS::ASRatchet;
 
-use rand::{rngs::StdRng, Rng, SeedableRng};
 use rand_core::OsRng;
-use x25519_dalek_ng::{PublicKey, StaticSecret};
-
-const R_STATIC_MATERIAL: [u8; 32] = [
-    59, 213, 202, 116, 72, 149, 45, 3, 163, 72, 11, 87, 152, 91, 221, 105, 241, 1, 101, 158, 72,
-    69, 125, 110, 61, 244, 236, 138, 41, 140, 127, 132,
-];
-const I_STATIC_PK_MATERIAL: [u8; 32] = [
-    205, 223, 6, 18, 99, 214, 239, 8, 65, 191, 174, 86, 128, 244, 122, 17, 32, 242, 101, 159, 17,
-    91, 11, 40, 175, 120, 16, 114, 175, 213, 41, 47,
-];
 
 mod edhoc;
-
-const DEVEUI: [u8; 8] = [0x1, 1, 2, 3, 2, 4, 5, 7];
-const APPEUI: [u8; 8] = [0, 1, 2, 3, 4, 5, 6, 7];
 
 fn main() -> Result<(), Error> {
     let listener = TcpListener::bind("192.168.1.227:8888").unwrap();
@@ -62,7 +43,7 @@ fn handle_connection(stream: &mut TcpStream) -> Result<(), Error> {
         println!("getting {:?}", incoming);
         let (newout, sendnew) = match ratchet.receive(incoming.to_vec()) {
             Ok((x, b)) => (x, b),
-            Err(e) => {
+            Err(_e) => {
                 println!("error has happened {:?}", incoming);
                 continue;
             }

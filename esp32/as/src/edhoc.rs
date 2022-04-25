@@ -1,3 +1,28 @@
+use oscore::edhoc::{
+    error::{OwnError, OwnOrPeerError},
+    util::build_error_message,
+    PartyR,
+};
+
+use std::net::{TcpStream};
+use std::io::{Read, Write};
+
+use rand::{rngs::StdRng, Rng, SeedableRng};
+
+use x25519_dalek_ng::{PublicKey, StaticSecret};
+
+const R_STATIC_MATERIAL: [u8; 32] = [
+    59, 213, 202, 116, 72, 149, 45, 3, 163, 72, 11, 87, 152, 91, 221, 105, 241, 1, 101, 158, 72,
+    69, 125, 110, 61, 244, 236, 138, 41, 140, 127, 132,
+];
+const I_STATIC_PK_MATERIAL: [u8; 32] = [
+    205, 223, 6, 18, 99, 214, 239, 8, 65, 191, 174, 86, 128, 244, 122, 17, 32, 242, 101, 159, 17,
+    91, 11, 40, 175, 120, 16, 114, 175, 213, 41, 47,
+];
+
+const DEVEUI: [u8; 8] = [0x1, 1, 2, 3, 2, 4, 5, 7];
+const APPEUI: [u8; 8] = [0, 1, 2, 3, 4, 5, 6, 7];
+
 pub fn join_procedure(stream: &mut TcpStream) -> Option<(Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>)> {
     // The AS first creates keys, and generates initial state for receiving message 1
     let as_static_priv = StaticSecret::from(R_STATIC_MATERIAL);
@@ -52,7 +77,6 @@ pub fn join_procedure(stream: &mut TcpStream) -> Option<(Vec<u8>, Vec<u8>, Vec<u
         Ok(val) => val,
     };
 
-    /// now generating the Devadd of 4 byues consisting of the NwkID and Devid
     let mut rng: StdRng = StdRng::from_entropy();
     let devaddr = rng.gen::<[u8; 4]>();
     // sending message 2, as phypayload 1
@@ -78,7 +102,7 @@ pub fn join_procedure(stream: &mut TcpStream) -> Option<(Vec<u8>, Vec<u8>, Vec<u
 
     let msg3 = extract_edhoc_message(phypayload2)?;
 
-    let (msg3verifier, kid) = match msg3_receiver.unpack_message_3_return_kid(msg3.edhoc_msg) {
+    let (msg3verifier, _kid) = match msg3_receiver.unpack_message_3_return_kid(msg3.edhoc_msg) {
         Err(OwnOrPeerError::PeerError(s)) => {
             println!("received error {} in message 3, shutting down", s);
             return None;
@@ -130,9 +154,9 @@ pub fn join_procedure(stream: &mut TcpStream) -> Option<(Vec<u8>, Vec<u8>, Vec<u
 }
 
 struct EdhocMessage {
-    m_type: u8,
-    fcntup: [u8; 2],
-    devaddr: [u8; 4],
+    _m_type: u8,
+    _fcntup: [u8; 2],
+    _devaddr: [u8; 4],
     edhoc_msg: Vec<u8>,
 }
 
@@ -159,9 +183,9 @@ fn extract_edhoc_message(msg: &[u8]) -> Option<EdhocMessage> {
     let devaddr = msg[3..7].try_into().ok()?;
     let edhoc_msg = msg[7..].try_into().ok()?;
     Some(EdhocMessage {
-        m_type,
-        fcntup,
-        devaddr,
+        _m_type: m_type,
+        _fcntup: fcntup,
+        _devaddr: devaddr,
         edhoc_msg,
     })
 }
