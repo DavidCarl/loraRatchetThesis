@@ -57,7 +57,7 @@ pub fn handshake(
 
     let msg1_sender = PartyI::new(
         deveui.to_vec(),
-        appeui.to_vec(),
+        Some(appeui.to_vec()),
         ed_ephemeral_keying,
         ed_static_priv,
         ed_static_pub,
@@ -176,7 +176,7 @@ fn edhoc_third_message(
                     Ok(val) => val,
                 };
 
-            let (msg4_receiver_verifier, msg3_bytes) = match msg3_sender.generate_message_3() {
+            let (msg4_receiver_verifier, msg3_bytes) = match msg3_sender.generate_message_3(None) {
                 Err(OwnError(b)) => {
                     return Err(OwnOrPeerError::OwnError(b));
                 }

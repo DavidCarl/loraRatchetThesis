@@ -32,21 +32,21 @@ pub fn run(
 
     thread::sleep(time::Duration::from_millis(5000));
 
-    message(lora, ed_ratchet, dhr_const, 1, config, ratchetkeys.devaddr);
+    loraratchet_main_loop(lora, ed_ratchet, dhr_const, 1, config, ratchetkeys.devaddr);
 }
 
-fn message(
+fn loraratchet_main_loop(
     lora: &mut LoRa<Spi, OutputPin, OutputPin>,
     mut ed_ratchet: EDRatchet<OsRng>,
     dhr_const: u16,
     n: i32,
     config: Config,
-    devaddr: Vec<u8>,
+    _devaddr: Vec<u8>,
 ) {
     loop {
         println!("{:?}", n);
         let random_message: [u8; 8] = rand::random();
-        let uplink = ed_ratchet.ratchet_encrypt_payload(&random_message, &devaddr);
+        let uplink = ed_ratchet.ratchet_encrypt_payload(&random_message);
         let (msg_uplink, len_uplink) = get_message_lenght(uplink);
         let transmit = lora.transmit_payload_busy(msg_uplink, len_uplink);
         match transmit {

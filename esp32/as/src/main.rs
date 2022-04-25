@@ -105,7 +105,7 @@ fn join_procedure(stream: &mut TcpStream) -> Option<(Vec<u8>, Vec<u8>, Vec<u8>, 
 
     // Sending message 2
     let mut fcnt_down = 0;
-    let (msg2_sender, deveui, appeui) = match msg1_receiver.handle_message_1(msg1.to_vec()) {
+    let (msg2_sender, deveui, appeui) = match msg1_receiver.handle_message_1_ead(msg1.to_vec()) {
         Err(OwnError(b)) => {
             println!("sending error {:?}, ", b);
             stream.write(&b).expect("stream writing error");
@@ -115,11 +115,11 @@ fn join_procedure(stream: &mut TcpStream) -> Option<(Vec<u8>, Vec<u8>, Vec<u8>, 
     };
 
     // this is simply an indication that the AS should check the appeui and devui
-    assert_eq!(APPEUI.to_vec(), appeui);
+    assert_eq!(APPEUI.to_vec(), appeui.unwrap());
     assert_eq!(DEVEUI.to_vec(), deveui);
     // Generate message 2
 
-    let (msg2_bytes, msg3_receiver) = match msg2_sender.generate_message_2() {
+    let (msg2_bytes, msg3_receiver) = match msg2_sender.generate_message_2(APPEUI.to_vec(), None) {
         Err(OwnOrPeerError::PeerError(s)) => {
             println!("received error {} generating message 2, shutting down", s);
             return None;
@@ -192,7 +192,7 @@ fn join_procedure(stream: &mut TcpStream) -> Option<(Vec<u8>, Vec<u8>, Vec<u8>, 
         };
     // send message 4
 
-    let msg4_bytes = match msg4_sender.generate_message_4() {
+    let msg4_bytes = match msg4_sender.generate_message_4(None) {
         Err(OwnOrPeerError::PeerError(s)) => {
             panic!("Received error msg: {}", s)
         }

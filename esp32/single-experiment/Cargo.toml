@@ -1,5 +1,5 @@
 [package]
-name = "ed"
+name = "single-experiment"
 version = "0.1.0"
 authors = ["daca <daca@itu.dk>"]
 edition = "2018"
@@ -16,17 +16,18 @@ opt-level = "z"
 pio = ["esp-idf-sys/pio"]
 
 [dependencies]
-anyhow = {version = "1", features = ["backtrace"]}
 esp-idf-sys = { version = "0.31", features = ["binstart"] }
-embedded-svc = "0.20.3"
-esp-idf-svc = "0.40.0"
-oscore = {git = "https://github.com/DavidCarl/oscore"}
-twoRatchet =  { git = "https://github.com/S3j5b0/Double_ratchet" }
+esp-idf-hal = "0.36.0"
+embedded-hal = "0.2.7"
+oscore  = { git = "https://github.com/DavidCarl/oscore" }
 coap-lite = { version = "0.9.0", default-features = false }
 serde = { version = "1.0.97", default-features = false, features = ["derive", "alloc"] }
 serde_cbor = { version = "0.11.2", default-features = false, features = ["alloc"] }
 serde_bytes = { version = "0.11.1", default-features = false, features = ["alloc"] }
 x25519-dalek-ng = { version = "1.1.1", default-features = false, features = ["u32_backend"] }
+twoRatchet =  { git = "https://github.com/S3j5b0/Double_ratchet" }
+esp-idf-svc = "0.40.0"
+embedded-svc = "0.20.3"
 rand_core = {version = "0.6"}
 rand = "*"
 

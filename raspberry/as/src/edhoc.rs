@@ -23,6 +23,8 @@ use crate::{
     generics::get_message_lenght,
 };
 
+const APPEUI: [u8; 8] = [0, 1, 2, 3, 4, 5, 6, 7];
+
 /// Pads the message we want to send with relevant data such as the mtype, devaddr and returns the message ready to send.
 ///     
 /// # Arguments
@@ -222,14 +224,18 @@ fn handle_first_gen_second_message(
     msg: Vec<u8>,
     msg1_receiver: PartyR<Msg1Receiver>,
 ) -> Result<Msg2, OwnOrPeerError> {
-    let (msg2_sender, _ad_r, _ad_i) = match msg1_receiver.handle_message_1(msg) {
+    let (msg2_sender, _deveui, appeui) = match msg1_receiver.handle_message_1_ead(msg) {
         Err(OwnError(b)) => {
             return Err(OwnOrPeerError::OwnError(b));
         }
         Ok(val) => val,
     };
 
-    let (msg2_bytes, msg3_receiver) = match msg2_sender.generate_message_2() {
+    if appeui.unwrap() != APPEUI {
+        return Err(OwnOrPeerError::PeerError("Wrong APPEUI".to_string()));
+    }
+    
+    let (msg2_bytes, msg3_receiver) = match msg2_sender.generate_message_2(APPEUI.to_vec(), None) {
         Err(OwnOrPeerError::PeerError(s)) => return Err(OwnOrPeerError::PeerError(s)),
         Err(OwnOrPeerError::OwnError(b)) => {
             return Err(OwnOrPeerError::OwnError(b));
@@ -291,7 +297,7 @@ fn handle_third_gen_fourth_message(
                     Err(OwnOrPeerError::OwnError(b)) => return Err(OwnOrPeerError::OwnError(b)),
                     Ok(val) => val,
                 };
-            match msg4_sender.generate_message_4() {
+            match msg4_sender.generate_message_4(None) {
                 Err(OwnOrPeerError::PeerError(s)) => Err(OwnOrPeerError::PeerError(s)),
                 Err(OwnOrPeerError::OwnError(b)) => Err(OwnOrPeerError::OwnError(b)),
                 Ok(msg4_bytes) => Ok(Msg4 {
