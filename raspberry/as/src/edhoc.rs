@@ -110,9 +110,8 @@ pub fn handle_m_type_zero(
 
 pub struct TypeTwo {
     pub msg3_receivers: HashMap<[u8; 4], PartyR<Msg3Receiver>>,
-    pub lora_ratchets: HashMap<[u8; 4], ASRatchet<OsRng>>,
+    pub connections: HashMap<[u8; 4], ASRatchet<OsRng>>,
     pub lora: LoRa<Spi, OutputPin, OutputPin>,
-    pub ratchet_recieved: HashMap<[u8; 4], u16>,
 }
 
 /// handle the second [[2]] message in the EDHOC handshake, and transmit the third [[3]] message in the sequence.
@@ -121,15 +120,13 @@ pub struct TypeTwo {
 ///
 /// * `buffer` - The incomming message
 /// * `msg3_receivers` - A hashmap where the reciever object needs to be stored based on a devaddr
-/// * `lora_ratchets` - A hashmap where the ratchet object needs to be stored based on a devaddr
+/// * `connections` - A hashmap where the ratchet object needs to be stored based on a devaddr
 /// * `lora` - A sx127x object, used for broadcasting a response
-/// * `ratchet_recieved` - A debug hashmap, here we store the amount of messages recieved based on the devaddr
 pub fn handle_m_type_two(
     buffer: Vec<u8>,
     mut msg3_receivers: HashMap<[u8; 4], PartyR<Msg3Receiver>>,
-    mut lora_ratchets: HashMap<[u8; 4], ASRatchet<OsRng>>,
+    mut connections: HashMap<[u8; 4], ASRatchet<OsRng>>,
     mut lora: LoRa<Spi, OutputPin, OutputPin>,
-    mut ratchet_recieved: HashMap<[u8; 4], u16>,
 ) -> TypeTwo {
     let (msg, devaddr) = unpack_edhoc_message(buffer);
     let msg3rec = msg3_receivers.remove(&devaddr).unwrap();
@@ -155,8 +152,7 @@ pub fn handle_m_type_two(
                 devaddr,
                 OsRng,
             );
-            lora_ratchets.insert(devaddr, as_ratchet);
-            ratchet_recieved.insert(devaddr, 2);
+            connections.insert(devaddr, as_ratchet);
         }
         Err(error) => match error {
             OwnOrPeerError::OwnError(x) => {
@@ -176,9 +172,8 @@ pub fn handle_m_type_two(
     }
     TypeTwo {
         msg3_receivers,
-        lora_ratchets,
+        connections,
         lora,
-        ratchet_recieved,
     }
 }
 

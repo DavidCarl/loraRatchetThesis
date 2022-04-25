@@ -64,8 +64,7 @@ fn main_loop(mut lora: LoRa<Spi, OutputPin, OutputPin>) {
     // We do this to make the server function more advanced such it can handle multiple clients at a time
     // and access the correct data based on the clients devaddr.
     let mut msg3_receivers: HashMap<[u8; 4], PartyR<Msg3Receiver>> = HashMap::new();
-    let mut lora_ratchets: HashMap<[u8; 4], ASRatchet<OsRng>> = HashMap::new();
-    let mut ratchet_recieved: HashMap<[u8; 4], u16> = HashMap::new();
+    let mut connections: HashMap<[u8; 4], ASRatchet<OsRng>> = HashMap::new();
     loop {
         let poll = lora.poll_irq(None, &mut Delay); //30 Second timeout
         match poll {
@@ -89,14 +88,12 @@ fn main_loop(mut lora: LoRa<Spi, OutputPin, OutputPin>) {
                         let rtn = edhoc::handle_m_type_two(
                             buffer,
                             msg3_receivers,
-                            lora_ratchets,
+                            connections,
                             lora,
-                            ratchet_recieved,
                         );
                         msg3_receivers = rtn.msg3_receivers;
-                        lora_ratchets = rtn.lora_ratchets;
+                        connections = rtn.connections;
                         lora = rtn.lora;
-                        ratchet_recieved = rtn.ratchet_recieved;
                     }
                     5 => {
                         println!("Recieved m type 5");
@@ -104,12 +101,10 @@ fn main_loop(mut lora: LoRa<Spi, OutputPin, OutputPin>) {
                         let rtn = handle_ratchet_message(
                             incoming.to_vec(),
                             lora,
-                            lora_ratchets,
-                            ratchet_recieved,
+                            connections,
                         );
                         lora = rtn.lora;
-                        lora_ratchets = rtn.lora_ratchets;
-                        ratchet_recieved = rtn.ratchet_recieved;
+                        connections = rtn.connections;
                     }
                     7 => {
                         println!("Recieved m type 7");
@@ -117,12 +112,10 @@ fn main_loop(mut lora: LoRa<Spi, OutputPin, OutputPin>) {
                         let rtn = handle_ratchet_message(
                             incoming.to_vec(),
                             lora,
-                            lora_ratchets,
-                            ratchet_recieved,
+                            connections,
                         );
                         lora = rtn.lora;
-                        lora_ratchets = rtn.lora_ratchets;
-                        ratchet_recieved = rtn.ratchet_recieved;
+                        connections = rtn.connections;
                     }
                     _ => {
                         println!("Recieved m type _");
@@ -136,8 +129,7 @@ fn main_loop(mut lora: LoRa<Spi, OutputPin, OutputPin>) {
 
 struct RatchetMessage {
     lora: LoRa<Spi, OutputPin, OutputPin>,
-    lora_ratchets: HashMap<[u8; 4], ASRatchet<OsRng>>,
-    ratchet_recieved: HashMap<[u8; 4], u16>,
+    connections: HashMap<[u8; 4], ASRatchet<OsRng>>,
 }
 
 /// This function handles the incomming ratchet messages, this includes decrypting, and checking if
@@ -148,35 +140,25 @@ struct RatchetMessage {
 /// * `buffer` - The recieved LoRaRatchet message.
 /// * `lora` - Takes a sx127x lora module object.
 /// * `lora_ratchet` - A hashmap containing all the ASRatchets.
-/// * `ratchet_recieved` - This is a debug hashmap. It contains the amount of messages recieved based on the devaddr
 fn handle_ratchet_message(
     buffer: Vec<u8>,
     mut lora: LoRa<Spi, OutputPin, OutputPin>,
-    mut lora_ratchets: HashMap<[u8; 4], ASRatchet<OsRng>>,
-    mut ratchet_recieved: HashMap<[u8; 4], u16>,
+    mut connections: HashMap<[u8; 4], ASRatchet<OsRng>>,
 ) -> RatchetMessage {
     let incoming = &buffer;
     let devaddr: [u8; 4] = buffer[14..18].try_into().unwrap();
-    let ratchet = lora_ratchets.remove(&devaddr);
+    let ratchet = connections.remove(&devaddr);
     match ratchet {
         Some(mut lora_ratchet) => {
-            let mut message_recieved = ratchet_recieved.remove(&devaddr).unwrap();
-            message_recieved += 1;
-            println!(
-                "Recieved #{:?} messages on the following devaddr {:?}",
-                message_recieved, devaddr
-            );
-            ratchet_recieved.insert(devaddr, message_recieved);
             let (newout, sendnew) = match lora_ratchet.receive(incoming.to_vec()) {
                 Ok((x, b)) => (x, b),
                 Err(x) => {
                     println!("error has happened {:?}", incoming);
                     println!("Error message {:?}", x);
-                    lora_ratchets.insert(devaddr, lora_ratchet);
+                    connections.insert(devaddr, lora_ratchet);
                     return RatchetMessage {
                         lora,
-                        lora_ratchets,
-                        ratchet_recieved,
+                        connections,
                     };
                 }
             };
@@ -190,13 +172,12 @@ fn handle_ratchet_message(
                     Err(_) => println!("Error"),
                 }
             }
-            lora_ratchets.insert(devaddr, lora_ratchet);
+            connections.insert(devaddr, lora_ratchet);
         }
         None => println!("No ratchet on this devaddr"),
     }
     RatchetMessage {
         lora,
-        lora_ratchets,
-        ratchet_recieved,
+        connections,
     }
 }

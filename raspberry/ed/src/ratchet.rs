@@ -111,8 +111,8 @@ fn loraratchet_main_loop(
         }*/
         let lora_set_mode = lora.set_mode(RadioMode::Sleep);
         match lora_set_mode {
-            Ok(_) => println!("Set to sleep mode success"),
-            Err(_) => println!("Set to sleep mode failed"),
+            Ok(_) => (),
+            Err(_) => (),
         }
         thread::sleep(time::Duration::from_millis(10000));
     }
