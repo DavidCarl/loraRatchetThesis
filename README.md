@@ -1,4 +1,4 @@
-# Lora Ratchet on Raspberry Pi
+# LoraRatchet Thesis implementations
 
 ## What is in this repo
 
