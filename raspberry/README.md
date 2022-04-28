@@ -10,8 +10,10 @@ For the ARM rust toolchain, we used [cross](https://github.com/cross-rs/cross). 
 
 ## What is in this repo
 
-* [Client](https://github.com/DavidCarl/rasp_lora_ratchet/tree/main/client)
-* [Server](https://github.com/DavidCarl/rasp_lora_ratchet/tree/main/server)
+This directory holds the source code for the implementations of LoRaRatchet build for raspberry pis. We have two different applications, ed, which is our end device and as, which is our server.
+
+* [ed](https://github.com/DavidCarl/loraRatchetThesis/tree/main/raspberry/ed)
+* [as](https://github.com/DavidCarl/loraRatchetThesis/tree/main/raspberry/as)
 
 
 ## Run

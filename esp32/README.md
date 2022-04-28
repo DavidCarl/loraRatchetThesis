@@ -1,12 +1,18 @@
 # ESP32
 
+## Prerequisites
+
+* ESP32 Rust toolchain
+* Raspberry Pi (We used 3B+)
+* SX1276 modules
+
+For the ESP32 rust toolchain, we used a toolchain made by esp-rs, and it can be found [here](https://github.com/esp-rs/rust-build).
+
 ## Running
 
 ### Compile
 
-First you need to install the ESP32 Rust toolchain, documentation about it can be read [here](https://github.com/esp-rs/rust-build)
-
-Secondly you need to set some envoirment variables, for the ESP32 to connect to wifi. 
+You need to set some envoirment variables, for the ESP32 to connect to wifi. 
 
 `RUST_ESP32_STD_DEMO_WIFI_SSID=<ssid>`
 `RUST_ESP32_STD_DEMO_WIFI_PASS=<password>`
