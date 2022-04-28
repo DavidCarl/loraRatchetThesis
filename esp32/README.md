@@ -4,15 +4,9 @@
 
 Here we have our implementations for the ESP32, in this directory we have 3 directories.
 
-as: This is the LoRaRatchet server
-
-ed: This is the LoRaRatchet client
-
-single-expirement: This is a implementation that acts both as the server and client for the ESP32
-
-* [as](https://github.com/DavidCarl/loraRatchetThesis/tree/main/esp32/as)
-* [ed](https://github.com/DavidCarl/loraRatchetThesis/tree/main/esp32/ed)
-* [single-experiment](https://github.com/DavidCarl/loraRatchetThesis/tree/main/esp32/single-experiment)
+* [as:](https://github.com/DavidCarl/loraRatchetThesis/tree/main/esp32/as) This is the LoRaRatchet server
+* [ed:](https://github.com/DavidCarl/loraRatchetThesis/tree/main/esp32/ed) This is the LoRaRatchet client
+* [single-experiment:](https://github.com/DavidCarl/loraRatchetThesis/tree/main/esp32/single-experiment) This is a implementation that acts both as the server and client for the ESP32
 
 ## Prerequisites
 
