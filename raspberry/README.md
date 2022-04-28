@@ -45,3 +45,5 @@ now transfer this to your raspberry pi.
 ### Config files
 
 We made config files for the code, all the config files can be found in the respective directories, client & server.
+
+The config files required for the ed and as is located in the directories, and are called `keys.json` for the as and `config.json`, `keys.json` for the ed. All the config files need to be alongside the binary on the raspberry pi for them to load.
