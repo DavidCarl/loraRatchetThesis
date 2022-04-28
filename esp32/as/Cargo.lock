@@ -156,6 +156,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "doubleratchet"
+version = "0.1.0"
+source = "git+https://github.com/S3j5b0/Double_ratchet#8508fa24e302da1676cdd3ad338c237c8a0a86eb"
+dependencies = [
+ "aes",
+ "ccm",
+ "generic-array 0.14.5",
+ "hkdf",
+ "nom",
+ "rand",
+ "rand_core",
+ "sha2",
+ "x25519-dalek-ng",
+]
+
+[[package]]
 name = "fake-simd"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -260,7 +276,7 @@ checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
 [[package]]
 name = "oscore"
 version = "0.1.0"
-source = "git+https://github.com/DavidCarl/oscore#89459a32529929735a5ea09655bf4e1420f095c3"
+source = "git+https://github.com/DavidCarl/oscore#910a8eb2c37b2920c4f163f7b871df08fe056659"
 dependencies = [
  "aes",
  "ccm",
@@ -374,13 +390,13 @@ name = "server"
 version = "0.1.0"
 dependencies = [
  "coap-lite 0.8.1",
+ "doubleratchet",
  "oscore",
  "rand",
  "rand_core",
  "serde",
  "serde_bytes",
  "serde_cbor",
- "twoRatchet",
  "x25519-dalek-ng",
 ]
 
@@ -435,22 +451,6 @@ dependencies = [
  "quote",
  "syn",
  "unicode-xid",
-]
-
-[[package]]
-name = "twoRatchet"
-version = "0.1.0"
-source = "git+https://github.com/S3j5b0/Double_ratchet#742a74d5f48464bf36887232a9883e4b51885f8d"
-dependencies = [
- "aes",
- "ccm",
- "generic-array 0.14.5",
- "hkdf",
- "nom",
- "rand",
- "rand_core",
- "sha2",
- "x25519-dalek-ng",
 ]
 
 [[package]]

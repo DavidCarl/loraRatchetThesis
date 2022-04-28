@@ -5,7 +5,7 @@ use rand_core::OsRng;
 
 use oscore::edhoc::{api::Msg3Receiver, PartyR};
 
-use twoRatchet::AS::ASRatchet;
+use doubleratchet::r#as::ASRatchet;
 
 use sx127x_lora::LoRa;
 

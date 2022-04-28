@@ -2,7 +2,7 @@ use std::{thread, time};
 
 use rand_core::OsRng;
 
-use twoRatchet::ED::EDRatchet;
+use doubleratchet::ed::EDRatchet;
 
 use sx127x_lora::LoRa;
 use sx127x_lora::RadioMode;

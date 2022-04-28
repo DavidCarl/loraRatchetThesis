@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-twoRatchet =  { git = "https://github.com/S3j5b0/Double_ratchet" }
+doubleratchet =  { git = "https://github.com/S3j5b0/Double_ratchet" }
 
 oscore  = { git = "https://github.com/DavidCarl/oscore" }
 coap-lite = { version = "0.8.1", default-features = false }

@@ -25,7 +25,7 @@ serde = { version = "1.0.97", default-features = false, features = ["derive", "a
 serde_cbor = { version = "0.11.2", default-features = false, features = ["alloc"] }
 serde_bytes = { version = "0.11.1", default-features = false, features = ["alloc"] }
 x25519-dalek-ng = { version = "1.1.1", default-features = false, features = ["u32_backend"] }
-twoRatchet =  { git = "https://github.com/S3j5b0/Double_ratchet" }
+doubleratchet =  { git = "https://github.com/S3j5b0/Double_ratchet" }
 esp-idf-svc = "0.40.0"
 embedded-svc = "0.20.3"
 rand_core = {version = "0.6"}

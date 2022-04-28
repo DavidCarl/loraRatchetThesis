@@ -21,7 +21,7 @@ esp-idf-sys = { version = "0.31", features = ["binstart"] }
 embedded-svc = "0.20.3"
 esp-idf-svc = "0.40.0"
 oscore = {git = "https://github.com/DavidCarl/oscore"}
-twoRatchet =  { git = "https://github.com/S3j5b0/Double_ratchet" }
+doubleratchet =  { git = "https://github.com/S3j5b0/Double_ratchet" }
 coap-lite = { version = "0.9.0", default-features = false }
 serde = { version = "1.0.97", default-features = false, features = ["derive", "alloc"] }
 serde_cbor = { version = "0.11.2", default-features = false, features = ["alloc"] }

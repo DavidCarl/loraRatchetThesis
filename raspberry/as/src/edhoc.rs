@@ -10,7 +10,7 @@ use oscore::edhoc::{
     PartyR,
 };
 
-use twoRatchet::AS::ASRatchet;
+use doubleratchet::r#as::ASRatchet;
 
 use x25519_dalek_ng::{PublicKey, StaticSecret};
 

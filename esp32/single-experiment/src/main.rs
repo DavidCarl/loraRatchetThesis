@@ -5,8 +5,8 @@ use esp_idf_sys as _; // If using the `binstart` feature of `esp-idf-sys`, alway
 use std::convert::TryInto;
 use std::{thread, time::*};
 
-use twoRatchet::AS::ASRatchet;
-use twoRatchet::ED::EDRatchet;
+use doubleratchet::r#as::ASRatchet;
+use doubleratchet::ed::EDRatchet;
 //use embedded_hal::digital::v1::OutputPin;
 const DHR_CONST: u16 = 64;
 

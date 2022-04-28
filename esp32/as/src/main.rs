@@ -1,6 +1,6 @@
 use std::io::{Error, Read, Write};
 use std::net::{TcpListener, TcpStream};
-use twoRatchet::AS::ASRatchet;
+use doubleratchet::r#as::ASRatchet;
 
 use rand_core::OsRng;
 

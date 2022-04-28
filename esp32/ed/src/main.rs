@@ -21,7 +21,7 @@ use esp_idf_svc::sysloop::*;
 
 use esp_idf_svc::wifi::*;
 
-use twoRatchet::ED::EDRatchet;
+use doubleratchet::ed::EDRatchet;
 
 use rand_core::OsRng;
 
