@@ -6,6 +6,10 @@
 
 First you need to install the ESP32 Rust toolchain, documentation about it can be read [here](https://github.com/esp-rs/rust-build)
 
+Secondly you need to set some envoirment variables, for the ESP32 to connect to wifi. 
+`RUST_ESP32_STD_DEMO_WIFI_SSID=<ssid>`
+`RUST_ESP32_STD_DEMO_WIFI_PASS=<password>`
+
 When this is in place, you have the ability to build for the ESP32, do this by entering the directory and run `cargo build`.
 
 This will compile a binary in the `target/debug` directory, this file should now be flashed unto the ESP32.
