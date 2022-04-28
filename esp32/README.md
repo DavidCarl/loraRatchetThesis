@@ -7,6 +7,7 @@
 First you need to install the ESP32 Rust toolchain, documentation about it can be read [here](https://github.com/esp-rs/rust-build)
 
 Secondly you need to set some envoirment variables, for the ESP32 to connect to wifi. 
+
 `RUST_ESP32_STD_DEMO_WIFI_SSID=<ssid>`
 `RUST_ESP32_STD_DEMO_WIFI_PASS=<password>`
 
