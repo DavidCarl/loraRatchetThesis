@@ -1,13 +1,5 @@
 # Lora Ratchet on Raspberry Pi
 
-## Prerequisites
-
-* ARM Rust toolchain
-* Raspberry Pi (We used 3B+)
-* SX1276 modules
-
-For the ARM rust toolchain, we used [cross](https://github.com/cross-rs/cross). This requires Docker, but comes in a single package.
-
 ## What is in this repo
 
 This directory holds the source code for the implementations of LoRaRatchet build for raspberry pis. We have two different applications, ed, which is our end device and as, which is our server.
@@ -15,6 +7,13 @@ This directory holds the source code for the implementations of LoRaRatchet buil
 * [ed](https://github.com/DavidCarl/loraRatchetThesis/tree/main/raspberry/ed)
 * [as](https://github.com/DavidCarl/loraRatchetThesis/tree/main/raspberry/as)
 
+## Prerequisites
+
+* ARM Rust toolchain
+* Raspberry Pi (We used 3B+)
+* SX1276 modules
+
+For the ARM rust toolchain, we used [cross](https://github.com/cross-rs/cross). This requires Docker, but comes in a single package.
 
 ## Run
 

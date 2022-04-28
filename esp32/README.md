@@ -1,10 +1,23 @@
 # ESP32
 
+## What is in this repo
+
+Here we have our implementations for the ESP32, in this directory we have 3 directories.
+
+as: This is the LoRaRatchet server
+
+ed: This is the LoRaRatchet client
+
+single-expirement: This is a implementation that acts both as the server and client for the ESP32
+
+* [as](https://github.com/DavidCarl/loraRatchetThesis/tree/main/esp32/as)
+* [ed](https://github.com/DavidCarl/loraRatchetThesis/tree/main/esp32/ed)
+* [single-experiment](https://github.com/DavidCarl/loraRatchetThesis/tree/main/esp32/single-experiment)
+
 ## Prerequisites
 
 * ESP32 Rust toolchain
-* Raspberry Pi (We used 3B+)
-* SX1276 modules
+* ESP32
 
 For the ESP32 rust toolchain, we used a toolchain made by esp-rs, and it can be found [here](https://github.com/esp-rs/rust-build).
 

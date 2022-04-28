@@ -4,6 +4,9 @@
 
 This repo contains applications (server & client) for implemented LoraRatchet on either Raspberry pis or ESP32.
 
+* [esp32](https://github.com/DavidCarl/loraRatchetThesis/tree/main/esp32)
+* [raspberry pi](https://github.com/DavidCarl/loraRatchetThesis/tree/main/raspberry)
+
 ## Run
 
 If you want to run the thesis projects on either a Raspberry pi og ESP32, there are applications and code examples for those. Please go into their respective directory named such.
