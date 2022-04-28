@@ -2,10 +2,10 @@
 
 ## What is in this repo
 
-This directory holds the source code for the implementations of LoRaRatchet build for raspberry pis. We have two different applications, ed, which is our end device and as, which is our server.
+This directory holds the source code for the implementations of LoRaRatchet build for raspberry pis. 
 
-* [ed](https://github.com/DavidCarl/loraRatchetThesis/tree/main/raspberry/ed)
-* [as](https://github.com/DavidCarl/loraRatchetThesis/tree/main/raspberry/as)
+* [as:](https://github.com/DavidCarl/loraRatchetThesis/tree/main/raspberry/as) This is the LoRaRatchet server
+* [ed:](https://github.com/DavidCarl/loraRatchetThesis/tree/main/raspberry/ed) This is the LoRaRatchet client
 
 ## Prerequisites
 
