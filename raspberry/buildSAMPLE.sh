@@ -15,14 +15,14 @@ CLIENT_PASSWORD=$PASSWORD
 function server(){
     cd server || exit
     ~/.cargo/bin/cross build --target arm-unknown-linux-gnueabihf
-    sshpass -p "$SERVER_PASSWORD" scp target/arm-unknown-linux-gnueabihf/debug/rasp_lora_server $SERVER_USERNAME@$SERVER_IP:/home/$SERVER_USERNAME/
+    sshpass -p "$SERVER_PASSWORD" scp target/arm-unknown-linux-gnueabihf/debug/as $SERVER_USERNAME@$SERVER_IP:/home/$SERVER_USERNAME/
     cd ..
 }
 
 function client(){
     cd client || exit
     ~/.cargo/bin/cross build --target arm-unknown-linux-gnueabihf
-    sshpass -p "$CLIENT_PASSWORD" scp target/arm-unknown-linux-gnueabihf/debug/rasp_lora_client $CLIENT_USERNAME@$CLIENT_IP:/home/$CLIENT_USERNAME/
+    sshpass -p "$CLIENT_PASSWORD" scp target/arm-unknown-linux-gnueabihf/debug/ed $CLIENT_USERNAME@$CLIENT_IP:/home/$CLIENT_USERNAME/
     cd ..
 }
 
@@ -42,6 +42,7 @@ elif [[ "$OPTION" == "server" ]]; then
 else
     echo "Misisng options"
     echo "use: 'both' for client and server"
-    echo "use: 'server' for server"
-    echo "use: 'client' for client"
+    echo "use: 'as' for server"
+    echo "use: 'ed' for client"
 fi
+
