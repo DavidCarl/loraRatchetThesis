@@ -2,7 +2,7 @@
 
 ## What is in this repo
 
-This directory holds the source code for the implementations of LoRaRatchet build for raspberry pis. 
+This directory holds the source code for the implementations of LoRaRatchet build for raspberry pis. There is also a bash script for easy compile and upload of the binaries to the raspberry pis.
 
 * [as:](https://github.com/DavidCarl/loraRatchetThesis/tree/main/raspberry/as) This is the LoRaRatchet server
 * [ed:](https://github.com/DavidCarl/loraRatchetThesis/tree/main/raspberry/ed) This is the LoRaRatchet client
