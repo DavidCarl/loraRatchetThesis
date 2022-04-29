@@ -17,9 +17,9 @@ use std::collections::HashMap;
 
 mod edhoc;
 mod filehandler;
-mod generics;
+mod lora_handler;
 mod phypayload_handler;
-
+use lora_handler::lora_send;
 const LORA_CS_PIN: u8 = 8;
 const LORA_RESET_PIN: u8 = 22;
 const FREQUENCY: i64 = 915;
@@ -164,14 +164,7 @@ fn handle_ratchet_message(
                 }
             };
             if sendnew {
-                let (msg_buffer, len) = generics::get_message_length(newout);
-                let transmit = lora.transmit_payload_busy(msg_buffer, len);
-                match transmit {
-                    Ok(packet_size) => {
-                        println!("Sent packet with size: {:?}", packet_size)
-                    }
-                    Err(_) => println!("Error"),
-                }
+                lora_send(&mut lora, newout);
             }
             connections.insert(devaddr, lora_ratchet);
         }

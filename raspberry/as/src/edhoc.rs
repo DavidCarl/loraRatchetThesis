@@ -20,7 +20,7 @@ use std::collections::HashMap;
 
 use crate::{
     filehandler::{load_static_keys, StaticKeys},
-    generics::get_message_length,
+    lora_handler::{lora_send},
     phypayload_handler::{unpack_edhoc_first_message,unpack_edhoc_message,prepare_message},
 };
 
@@ -62,25 +62,11 @@ pub fn handle_m_type_zero(
     match res {
         Ok(rtn) => {
             msg3_receivers.insert(rtn.devaddr, rtn.msg3_receiver);
-            let (msg_buffer, len) = get_message_length(rtn.msg);
-            let transmit = lora.transmit_payload_busy(msg_buffer, len);
-            match transmit {
-                Ok(packet_size) => {
-                    println!("Sent packet with size: {:?}", packet_size)
-                }
-                Err(_) => println!("Error"),
-            }
+            lora_send(&mut lora,rtn.msg);
         }
         Err(error) => match error {
             OwnOrPeerError::OwnError(x) => {
-                let (msg_buffer, len) = get_message_length(x);
-                let transmit = lora.transmit_payload_busy(msg_buffer, len);
-                match transmit {
-                    Ok(packet_size) => {
-                        println!("Sent packet with size: {:?} OwnError", packet_size)
-                    }
-                    Err(_) => println!("Error"),
-                }
+                lora_send(&mut lora, x);
             }
             OwnOrPeerError::PeerError(x) => {
                 println!("Error in m_type_zero {:?}", x)
@@ -115,20 +101,13 @@ pub fn handle_m_type_two(
 ) -> TypeTwo {
     let (msg, devaddr) = unpack_edhoc_message(buffer);
     let msg3rec = msg3_receivers.remove(&devaddr).unwrap();
-    //let ed_static_pub = PublicKey::from(ed_static_pk_material);
 
     let payload = handle_third_gen_fourth_message(msg.to_vec(), msg3rec);
     match payload {
         Ok(msg4) => {
             let msg = prepare_message(msg4.msg4_bytes, 3, devaddr, false);
-            let (msg_buffer, len) = get_message_length(msg);
-            let transmit = lora.transmit_payload_busy(msg_buffer, len);
-            match transmit {
-                Ok(packet_size) => {
-                    println!("Sent packet with size: {:?}", packet_size)
-                }
-                Err(_) => println!("Error"),
-            }
+            lora_send(&mut lora, msg);
+
             //Create ratchet
             let as_ratchet = ASRatchet::new(
                 msg4.as_master.try_into().unwrap(),
@@ -141,14 +120,7 @@ pub fn handle_m_type_two(
         }
         Err(error) => match error {
             OwnOrPeerError::OwnError(x) => {
-                let (msg_buffer, len) = get_message_length(x);
-                let transmit = lora.transmit_payload_busy(msg_buffer, len);
-                match transmit {
-                    Ok(packet_size) => {
-                        println!("Sent packet with size: {:?} OwnError", packet_size)
-                    }
-                    Err(_) => println!("Error"),
-                }
+                lora_send(&mut lora, x);
             }
             OwnOrPeerError::PeerError(x) => {
                 println!("Error in m_type_two {:?}", x)
