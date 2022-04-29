@@ -18,6 +18,7 @@ use std::collections::HashMap;
 mod edhoc;
 mod filehandler;
 mod generics;
+mod phypayload_handler;
 
 const LORA_CS_PIN: u8 = 8;
 const LORA_RESET_PIN: u8 = 22;
