@@ -87,8 +87,7 @@ pub fn handshake(
                 let incoming = recieve_window(lora, config);
                 match incoming[0] {
                     3 => {
-                        //let (ed_sck, ed_rck, ed_rk, devaddr) =
-                        //    handle_message_fourth(incoming, msg4_reciever);
+
                         let rtn = handle_message_fourth(incoming, msg4_reciever);
                         match rtn {
                             Ok(values) => {
@@ -137,25 +136,13 @@ fn edhoc_first_message(msg1_sender: PartyI<Msg1Sender>) -> (Vec<u8>, PartyI<Msg2
 fn edhoc_third_message(
     msg2: Vec<u8>,
     msg2_receiver: PartyI<Msg2Receiver>,
-    //as_static_pub: PublicKey,
 ) -> Result<(Vec<u8>, PartyI<Msg4ReceiveVerify>), OwnOrPeerError> {
     let msg_struc = remove_message(msg2);
-    /*unsafe {
-        DEVADDR = msg_struc.devaddr;
-    }*/
+
 
     // read from file, and check what key responds to as_kid
     // Needs to be used when verififying message2 instead of &as_static_pub.as_bytes()
-    let (as_kid, _ad_r, msg2_verifier) =
-        match msg2_receiver.unpack_message_2_return_kid(msg_struc.msg) {
-            Err(OwnOrPeerError::PeerError(s)) => {
-                return Err(OwnOrPeerError::PeerError(s));
-            }
-            Err(OwnOrPeerError::OwnError(b)) => {
-                return Err(OwnOrPeerError::OwnError(b));
-            }
-            Ok(val) => val,
-        };
+    let (as_kid, _ad_r, msg2_verifier) = msg2_receiver.unpack_message_2_return_kid(msg_struc.msg)?;
 
     let enc_keys: StaticKeys = load_static_keys("./keys.json".to_string());
     let mut opt_as_static_pub: Option<PublicKey> = None;
@@ -169,7 +156,7 @@ fn edhoc_third_message(
     match opt_as_static_pub {
         Some(as_static_pub) => {
             let msg3_sender =
-                match msg2_verifier.verify_message_2(as_static_pub.as_bytes().as_ref()) {
+                match msg2_verifier.verify_message_2(as_static_pub.as_bytes()) {
                     Err(OwnError(b)) => {
                         return Err(OwnOrPeerError::OwnError(b));
                     }
@@ -201,11 +188,8 @@ fn handle_message_fourth(
     msg: Vec<u8>,
     msg4_receiver_verifier: PartyI<Msg4ReceiveVerify>,
 ) -> Result<FourthMessage, oscore::edhoc::error::OwnOrPeerError> {
-    let msg_struc = remove_message(msg);
-    let out = msg4_receiver_verifier.handle_message_4(msg_struc.msg);
-    match out {
-        Err(OwnOrPeerError::PeerError(s)) => Err(OwnOrPeerError::PeerError(s)),
-        Err(OwnOrPeerError::OwnError(s)) => Err(OwnOrPeerError::OwnError(s)),
-        Ok((ed_sck, ed_rck, ed_rk)) => Ok(FourthMessage{ed_sck, ed_rck, ed_rk, devaddr: msg_struc.devaddr.to_vec()}),
-    }
+    let msg_struct = remove_message(msg);
+    let (ed_sck, ed_rck, ed_rk) = msg4_receiver_verifier.handle_message_4(msg_struct.msg)?;
+    Ok(FourthMessage{ed_sck, ed_rck, ed_rk, devaddr: msg_struct.devaddr.to_vec()})
+
 }

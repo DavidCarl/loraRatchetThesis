@@ -163,7 +163,7 @@ fn handle_ratchet_message(
                 }
             };
             if sendnew {
-                let (msg_buffer, len) = generics::get_message_lenght(newout);
+                let (msg_buffer, len) = generics::get_message_length(newout);
                 let transmit = lora.transmit_payload_busy(msg_buffer, len);
                 match transmit {
                     Ok(packet_size) => {

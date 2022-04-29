@@ -119,7 +119,7 @@ pub fn join_procedure(stream: &mut TcpStream) -> Option<(Vec<u8>, Vec<u8>, Vec<u
     let ed_static_pub = PublicKey::from(I_STATIC_PK_MATERIAL);
 
     let (msg4_sender, as_sck, as_rck, as_rk) =
-        match msg3verifier.verify_message_3(&ed_static_pub.as_bytes().to_vec()) {
+        match msg3verifier.verify_message_3(ed_static_pub.as_bytes()) {
             Err(OwnOrPeerError::PeerError(s)) => {
                 println!(
                     "received error {} while verifying message 3, shutting down",

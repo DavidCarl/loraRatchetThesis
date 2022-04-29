@@ -20,7 +20,7 @@ use std::collections::HashMap;
 
 use crate::{
     filehandler::{load_static_keys, StaticKeys},
-    generics::get_message_lenght,
+    generics::get_message_length,
 };
 
 const APPEUI: [u8; 8] = [0, 1, 2, 3, 4, 5, 6, 7];
@@ -77,7 +77,7 @@ pub fn handle_m_type_zero(
     match res {
         Ok(rtn) => {
             msg3_receivers.insert(rtn.devaddr, rtn.msg3_receiver);
-            let (msg_buffer, len) = get_message_lenght(rtn.msg);
+            let (msg_buffer, len) = get_message_length(rtn.msg);
             let transmit = lora.transmit_payload_busy(msg_buffer, len);
             match transmit {
                 Ok(packet_size) => {
@@ -88,7 +88,7 @@ pub fn handle_m_type_zero(
         }
         Err(error) => match error {
             OwnOrPeerError::OwnError(x) => {
-                let (msg_buffer, len) = get_message_lenght(x);
+                let (msg_buffer, len) = get_message_length(x);
                 let transmit = lora.transmit_payload_busy(msg_buffer, len);
                 match transmit {
                     Ok(packet_size) => {
@@ -136,7 +136,7 @@ pub fn handle_m_type_two(
     match payload {
         Ok(msg4) => {
             let msg = prepare_message(msg4.msg4_bytes, 3, devaddr, false);
-            let (msg_buffer, len) = get_message_lenght(msg);
+            let (msg_buffer, len) = get_message_length(msg);
             let transmit = lora.transmit_payload_busy(msg_buffer, len);
             match transmit {
                 Ok(packet_size) => {
@@ -156,7 +156,7 @@ pub fn handle_m_type_two(
         }
         Err(error) => match error {
             OwnOrPeerError::OwnError(x) => {
-                let (msg_buffer, len) = get_message_lenght(x);
+                let (msg_buffer, len) = get_message_length(x);
                 let transmit = lora.transmit_payload_busy(msg_buffer, len);
                 match transmit {
                     Ok(packet_size) => {
@@ -230,14 +230,7 @@ fn handle_first_gen_second_message(
         return Err(OwnOrPeerError::PeerError("Wrong APPEUI".to_string()));
     }
     
-    let (msg2_bytes, msg3_receiver) = match msg2_sender.generate_message_2(APPEUI.to_vec(), None) {
-        Err(OwnOrPeerError::PeerError(s)) => return Err(OwnOrPeerError::PeerError(s)),
-        Err(OwnOrPeerError::OwnError(b)) => {
-            return Err(OwnOrPeerError::OwnError(b));
-        }
-        Ok(val) => val,
-    };
-
+    let (msg2_bytes, msg3_receiver) =  msg2_sender.generate_message_2(APPEUI.to_vec(), None)?;
     // generate dev id, make sure its unique!
     // TODO: Make sure dev_addr is unique!
     let devaddr: [u8; 4] = rand::random();
@@ -257,7 +250,7 @@ struct Msg4 {
     as_master: Vec<u8>,
 }
 
-/// This function handles the EDHOC logic behind the third [[3]] message. It extracts a KID value, which makes us able to load a pre known keys from a file. 
+/// This function handles the EDHOC logic behind the third [[3]] message. It extracts a KID value, which makes us able to load pre-known keys from a file. 
 /// We then use these informations to get the keys we need to start our LoRaRatchet protocol and send the fourth [[4]] message.
 ///     
 /// # Arguments
@@ -268,12 +261,7 @@ fn handle_third_gen_fourth_message(
     msg: Vec<u8>,
     msg3_receiver: PartyR<Msg3Receiver>,
 ) -> Result<Msg4, OwnOrPeerError> {
-    let (msg3verifier, ed_kid) = match msg3_receiver.unpack_message_3_return_kid(msg) {
-        //.handle_message_3(msg) {
-        Err(OwnOrPeerError::PeerError(s)) => return Err(OwnOrPeerError::PeerError(s)),
-        Err(OwnOrPeerError::OwnError(b)) => return Err(OwnOrPeerError::OwnError(b)),
-        Ok(val) => val,
-    };
+    let (msg3verifier, ed_kid) = msg3_receiver.unpack_message_3_return_kid(msg)?;
 
     let enc_keys: StaticKeys = load_static_keys("./keys.json".to_string());
     let mut opt_ed_static_pub: Option<PublicKey> = None;
@@ -286,22 +274,16 @@ fn handle_third_gen_fourth_message(
     // find ed_static_pub kommer fra lookup
     match opt_ed_static_pub {
         Some(ed_static_pub) => {
-            let (msg4_sender, as_sck, as_rck, as_master) =
-                match msg3verifier.verify_message_3(ed_static_pub.as_bytes().as_ref()) {
-                    Err(OwnOrPeerError::PeerError(s)) => return Err(OwnOrPeerError::PeerError(s)),
-                    Err(OwnOrPeerError::OwnError(b)) => return Err(OwnOrPeerError::OwnError(b)),
-                    Ok(val) => val,
-                };
-            match msg4_sender.generate_message_4(None) {
-                Err(OwnOrPeerError::PeerError(s)) => Err(OwnOrPeerError::PeerError(s)),
-                Err(OwnOrPeerError::OwnError(b)) => Err(OwnOrPeerError::OwnError(b)),
-                Ok(msg4_bytes) => Ok(Msg4 {
-                    msg4_bytes,
-                    as_sck,
-                    as_rck,
-                    as_master,
-                }),
-            }
+            let (msg4_sender, as_sck, as_rck, as_master) = msg3verifier.verify_message_3(ed_static_pub.as_bytes())?;
+            let msg4_bytes =  msg4_sender.generate_message_4(None)?;
+
+            return Ok(Msg4 {
+                msg4_bytes,
+                as_sck,
+                as_rck,
+                as_master,
+            })
+            
         }
         None => panic!("Missing kid value"),
     }
