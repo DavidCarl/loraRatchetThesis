@@ -1,3 +1,6 @@
+static mut FCNTDOWN: u16 = 0;
+
+
 /// This function removes the framecounter and the m type, and solely returns the message itself.
 ///     
 /// # Arguments
@@ -33,6 +36,10 @@ pub fn unpack_edhoc_message(msg: Vec<u8>) -> (Vec<u8>, [u8; 4]) {
 pub fn prepare_message(msg: Vec<u8>, mtype: u8, devaddr: [u8; 4], first_msg: bool) -> Vec<u8> {
     let mut buffer = Vec::new();
     buffer.extend_from_slice(&mtype.to_be_bytes());
+    unsafe {
+        buffer.extend_from_slice(&FCNTDOWN.to_be_bytes());
+        FCNTDOWN += 1;
+    }
     if !first_msg {
         buffer.extend_from_slice(&devaddr);
     }
