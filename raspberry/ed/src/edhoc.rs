@@ -16,7 +16,7 @@ use rand::{rngs::StdRng, Rng, SeedableRng};
 
 use crate::{
     filehandling::{load_static_keys, StaticKeys, Config},
-    generics::{get_message_lenght, recieve_window},
+    lora_handler::{recieve_window,lora_send},
     phypayload_handler::{ prepare_message, remove_message}
 };
 
@@ -65,26 +65,16 @@ pub fn handshake(
         ed_kid,
     );
     let (payload1, msg2_reciever) = edhoc_first_message(msg1_sender);
-    let (msg, len) = get_message_lenght(payload1);
+    lora_send(lora, payload1);
 
-    let transmit = lora.transmit_payload_busy(msg, len);
-    match transmit {
-        Ok(packet_size) => println!("Sent packet with size: {:?}", packet_size),
-        Err(_) => println!("Error"),
-    }
 
     let incoming = recieve_window(lora, config);
     match incoming[0] {
         1 => match edhoc_third_message(incoming.to_vec(), msg2_reciever) {
             Ok((msg3, msg4_reciever)) => {
-                let (msg, len) = get_message_lenght(msg3);
-                let transmit = lora.transmit_payload_busy(msg, len);
-                match transmit {
-                    Ok(packet_size) => {
-                        println!("Sent packet with size: {:?}", packet_size)
-                    }
-                    Err(_) => println!("Error"),
-                }
+
+                lora_send(lora, msg3);
+
                 let incoming = recieve_window(lora, config);
                 match incoming[0] {
                     3 => {

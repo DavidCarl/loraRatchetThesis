@@ -8,14 +8,20 @@ use rppal::spi::Spi;
 use crate::filehandling::Config;
 
 
-pub fn get_message_lenght(message: Vec<u8>) -> ([u8; 255], usize) {
+fn get_message_length(message: Vec<u8>) -> ([u8; 255], usize) {
     let mut buffer = [0; 255];
     for (i, byte) in message.iter().enumerate() {
         buffer[i] = *byte;
     }
     (buffer, message.len())
 }
-
+/// Opens two receive windows
+/// 
+///     
+/// # Arguments
+///
+/// * `lora` - mutably borrowed lora object
+/// * `config` - Object containing configuration options, such as receive window delay time
 pub fn recieve_window(lora: &mut LoRa<Spi, OutputPin, OutputPin>, config: Config) -> Vec<u8> {
     //Result<ReceiveWindow, Box<dyn stdError>> {
     thread::sleep(time::Duration::from_millis(config.rx1_delay));
@@ -39,4 +45,27 @@ pub fn recieve_window(lora: &mut LoRa<Spi, OutputPin, OutputPin>, config: Config
             }
         }
     }
+}
+
+
+    /// Wrapper function for sending message over lora object
+    ///
+    /// # Arguments
+    ///
+    /// * `lora` - mutable referenced to our lora module
+    ///
+    /// # Note 
+    /// It is important to notice that transmitting may fail, this may require a rerun of the edhoc handshake
+    /// if one of those messages fail
+pub fn lora_send(lora: &mut LoRa<Spi, OutputPin, OutputPin>, message : Vec<u8>)  {
+
+    let (msg_buffer, len) = get_message_length(message);
+    let transmit = lora.transmit_payload_busy(msg_buffer, len);
+    match transmit {
+        Ok(packet_size) => {
+            println!("Sent packet with size: {:?}", packet_size)
+        }
+        Err(_) => println!("Transmission Error"),
+    }
+
 }

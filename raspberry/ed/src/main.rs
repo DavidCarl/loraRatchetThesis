@@ -9,7 +9,7 @@ use rppal::spi::{Bus, Mode, SlaveSelect, Spi};
 
 mod filehandling;
 mod edhoc;
-mod generics;
+mod lora_handler;
 mod ratchet;
 mod phypayload_handler;
 const LORA_CS_PIN: u8 = 8;
