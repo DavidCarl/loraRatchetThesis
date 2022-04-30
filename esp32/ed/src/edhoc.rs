@@ -1,5 +1,5 @@
-use rand::{rngs::StdRng, Rng, SeedableRng};
-
+use rand_core::RngCore;
+use crate::hrng::HRNG;
 use std::net::TcpStream;
 use std::io::{Read, Write};
 use core::convert::TryInto;
@@ -41,8 +41,10 @@ pub fn join_procedure(stream: &mut TcpStream) -> Option<(Vec<u8>, Vec<u8>, Vec<u
     let ed_static_priv = StaticSecret::from(I_STATIC_MATERIAL);
     let ed_static_pub = PublicKey::from(&ed_static_priv);
 
-    let mut r: StdRng = StdRng::from_entropy();
-    let ed_ephemeral_keying = r.gen::<[u8; 32]>();
+
+
+    let mut ed_ephemeral_keying = [0; 32];
+    HRNG.fill_bytes(&mut ed_ephemeral_keying);
 
     let msg1_sender = PartyI::new(
         DEVEUI.to_vec(),
