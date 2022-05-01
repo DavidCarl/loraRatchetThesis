@@ -11,7 +11,7 @@ use doubleratchet::ed::EDRatchet;
 const DHR_CONST: u16 = 64;
 
 mod edhoc;
-mod esp32;
+mod hrng;
 
 fn main() {
 
