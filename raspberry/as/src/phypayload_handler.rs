@@ -1,30 +1,37 @@
 static mut FCNTDOWN: u16 = 0;
 
 
-/// This function removes the framecounter and the m type, and solely returns the message itself.
-///     
-/// # Arguments
-///
-/// * `msg` - the message which needs to be handled.
-pub fn unpack_edhoc_first_message(msg: Vec<u8>) -> Vec<u8> {
-    let msg = &msg[1..]; // fjerne mtype
-    let _framecounter = &msg[0..2]; // gemme framecounter
-    let msg = &msg[2..]; // fjerne frame counter
-    msg.to_vec()
+pub struct EdhocPhypayload {
+    pub _m: u8,
+    pub _fcntup: [u8; 2],
+    pub devaddr: [u8; 4],
+    pub msg: Vec<u8>,
 }
 
-/// This function removes the framecounter and the m type, and returns the message and devaddr.
+/// Here we seperate the function into multiple smaller information bites, so its more usefull.
 ///     
 /// # Arguments
 ///
-/// * `msg` - the message which needs to be handled.
-pub fn unpack_edhoc_message(msg: Vec<u8>) -> (Vec<u8>, [u8; 4]) {
-    let msg = &msg[1..]; // fjerne mtype
-    let msg = &msg[2..]; // fjerne frame counter
-    let devaddr = msg[0..4].try_into().unwrap();
-    let msg = &msg[4..];
-    (msg.to_vec(), devaddr)
+/// * `ogmsg` - the message which needs to be handled.
+/// * `first` - Is it the first message?
+pub fn remove_message(ogmsg: Vec<u8>, first: bool) -> EdhocPhypayload {
+    if first {
+        EdhocPhypayload {
+            _m: ogmsg[0],
+            _fcntup: ogmsg[1..3].try_into().unwrap(),
+            devaddr: [0,0,0,0],
+            msg: ogmsg[3..].try_into().unwrap()
+        }
+    }else{
+        EdhocPhypayload {
+            _m: ogmsg[0],
+            _fcntup: ogmsg[1..3].try_into().unwrap(),
+            devaddr: ogmsg[3..7].try_into().unwrap(),
+            msg: ogmsg[7..].try_into().unwrap(),
+        }
+    }
 }
+
 /// Pads the message we want to send with relevant data such as the mtype, devaddr and returns the message ready to send.
 ///     
 /// # Arguments

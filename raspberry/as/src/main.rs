@@ -67,11 +67,11 @@ fn main_loop(mut lora: LoRa<Spi, OutputPin, OutputPin>) {
     let mut msg3_receivers: HashMap<[u8; 4], PartyR<Msg3Receiver>> = HashMap::new();
     let mut connections: HashMap<[u8; 4], ASRatchet<OsRng>> = HashMap::new();
     loop {
-        let poll = lora.poll_irq(None, &mut Delay); //30 Second timeout
+        let poll = lora.poll_irq(None, &mut Delay);
         match poll {
             Ok(size) => {
                 println!("Recieved packet with size: {:?}", size);
-                let buffer = lora.read_packet().unwrap(); // Received buffer. NOTE: 255 bytes are always returned
+                let buffer = lora.read_packet().unwrap();
                 match buffer[0] {
                     0 => {
                         println!("Recieved m type 0");

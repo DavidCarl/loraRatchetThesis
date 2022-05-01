@@ -66,8 +66,6 @@ fn loraratchet_main_loop(
         if ed_ratchet.fcnt_up >= dhr_const {
             let dhr_req = ed_ratchet.initiate_ratch(); 
             lora_send(lora, dhr_req);
- 
-
                     let incoming = recieve_window(lora, config);
                     if !incoming.is_empty() {
                         match ed_ratchet.receive(incoming.to_vec()) {
@@ -83,10 +81,7 @@ fn loraratchet_main_loop(
                         };
                     
                 }
- 
         }
-
-
         let lora_set_mode = lora.set_mode(RadioMode::Sleep);
         match lora_set_mode {
             Ok(_) => (),

@@ -51,8 +51,6 @@ pub fn handshake(
     let ed_kid = [0xA2].to_vec();
     let ed_static_priv = StaticSecret::from(enc_keys.ed_static_material);
     let ed_static_pub = PublicKey::from(&ed_static_priv);
-    //let as_static_pub = PublicKey::from(enc_keys.as_static_material);
-    // create ehpemeral key material
     let mut r: StdRng = StdRng::from_entropy();
     let ed_ephemeral_keying = r.gen::<[u8; 32]>();
 
@@ -91,7 +89,7 @@ pub fn handshake(
                                 Ok(ratchet_keys)
                             }
                             Err(OwnOrPeerError::OwnError(x)) => {
-                                println!("Got my own error {:?}", x);
+                                lora_send(lora, x);
                                 Err(Box::new(MyError("Own error in m_type 3".to_string())))
                             }
                             Err(OwnOrPeerError::PeerError(x)) => {
@@ -106,7 +104,10 @@ pub fn handshake(
                 }
             }
             Err(OwnOrPeerError::PeerError(x)) => Err(Box::new(MyError(x))),
-            Err(OwnOrPeerError::OwnError(_)) => Err(Box::new(MyError("Own error".to_string()))),
+            Err(OwnOrPeerError::OwnError(x)) => {
+                lora_send(lora, x);
+                return Err(Box::new(MyError("Own error".to_string())));
+            },
         },
         _ => Err(Box::new(MyError(
             "Recieved nothing in our allocated time span".to_string(),
@@ -116,8 +117,6 @@ pub fn handshake(
 
 fn edhoc_first_message(msg1_sender: PartyI<Msg1Sender>) -> (Vec<u8>, PartyI<Msg2Receiver>) {
     let (msg1_bytes, msg2_receiver) =
-    // If an error happens here, we just abort. No need to send a message,
-    // since the protocol hasn't started yet.
     msg1_sender.generate_message_1(METHOD_TYPE_I, SUITE_I).unwrap();
 
     let payload1 = prepare_message(msg1_bytes, 0, true, [0,0,0,0]);
@@ -130,9 +129,6 @@ fn edhoc_third_message(
 ) -> Result<(Vec<u8>, PartyI<Msg4ReceiveVerify>), OwnOrPeerError> {
     let msg_struc = remove_message(msg2);
 
-
-    // read from file, and check what key responds to as_kid
-    // Needs to be used when verififying message2 instead of &as_static_pub.as_bytes()
     let (as_kid, _ad_r, msg2_verifier) = msg2_receiver.unpack_message_2_return_kid(msg_struc.msg)?;
 
     let enc_keys: StaticKeys = load_static_keys("./keys.json".to_string());
@@ -143,7 +139,6 @@ fn edhoc_third_message(
         }
     }
 
-    // I has now received the as_kid, such that the can retrieve the static key of as, and verify the first message
     match opt_as_static_pub {
         Some(as_static_pub) => {
             let msg3_sender =

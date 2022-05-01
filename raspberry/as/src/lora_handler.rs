@@ -1,5 +1,4 @@
 use sx127x_lora::LoRa;
-use std::{thread, time};
 
 use rppal::gpio::OutputPin;
 use rppal::spi::Spi;
@@ -18,8 +17,6 @@ fn get_message_length(message: Vec<u8>) -> ([u8; 255], usize) {
     (buffer, message.len())
 }
 
-
-
     /// Wrapper function for sending message over lora object
     ///
     /// # Arguments
@@ -29,8 +26,6 @@ fn get_message_length(message: Vec<u8>) -> ([u8; 255], usize) {
     /// # Note 
     /// It is important to notice that transmitting may fail, this may require a rerun of the edhoc handshake
     /// if one of those messages fail
-
-
 pub fn lora_send(lora: &mut LoRa<Spi, OutputPin, OutputPin>, message : Vec<u8>)  {
 
     let (msg_buffer, len) = get_message_length(message);

@@ -1,14 +1,14 @@
 static mut FCNTUP: u16 = 0;
 
-pub struct MessageStruct {
+pub struct EdhocPhypayload {
     pub _m: u8,
     pub _fcntdown: [u8; 2],
     pub devaddr: [u8; 4],
     pub msg: Vec<u8>,
 }
 
-pub fn remove_message(ogmsg: Vec<u8>) -> MessageStruct {
-    MessageStruct {
+pub fn remove_message(ogmsg: Vec<u8>) -> EdhocPhypayload {
+    EdhocPhypayload {
         _m: ogmsg[0],
         _fcntdown: ogmsg[1..3].try_into().unwrap(),
         devaddr: ogmsg[3..7].try_into().unwrap(),

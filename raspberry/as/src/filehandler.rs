@@ -6,7 +6,7 @@ use std::fs;
 #[derive(Serialize, Deserialize, Debug)]
 pub struct StaticKeys {
     pub as_static_material: [u8; 32],
-    pub ed_keys: Vec<EdKeys>, //ed_static_pk_material: [u8; 32]
+    pub ed_keys: Vec<EdKeys>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

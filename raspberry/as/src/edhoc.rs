@@ -21,7 +21,7 @@ use std::collections::HashMap;
 use crate::{
     filehandler::{load_static_keys, StaticKeys},
     lora_handler::{lora_send},
-    phypayload_handler::{unpack_edhoc_first_message,unpack_edhoc_message,prepare_message},
+    phypayload_handler::{prepare_message, remove_message},
 };
 
 const APPEUI: [u8; 8] = [0, 1, 2, 3, 4, 5, 6, 7];
@@ -48,7 +48,9 @@ pub fn handle_m_type_zero(
     mut lora: LoRa<Spi, OutputPin, OutputPin>,
     as_static_material: [u8; 32],
 ) -> TypeZero {
-    let msg = unpack_edhoc_first_message(buffer);
+    let phypayload = remove_message(buffer, true);//unpack_edhoc_first_message(buffer);
+
+    let msg = phypayload.msg;
 
     let as_static_priv = StaticSecret::from(as_static_material);
     let as_static_pub = PublicKey::from(&as_static_priv);
@@ -99,7 +101,9 @@ pub fn handle_m_type_two(
     mut connections: HashMap<[u8; 4], ASRatchet<OsRng>>,
     mut lora: LoRa<Spi, OutputPin, OutputPin>,
 ) -> TypeTwo {
-    let (msg, devaddr) = unpack_edhoc_message(buffer);
+    let phypayload = remove_message(buffer, false);//unpack_edhoc_message(buffer);
+    let msg = phypayload.msg;
+    let devaddr = phypayload.devaddr;
     let msg3rec = msg3_receivers.remove(&devaddr).unwrap();
 
     let payload = handle_third_gen_fourth_message(msg.to_vec(), msg3rec);
@@ -108,7 +112,6 @@ pub fn handle_m_type_two(
             let msg = prepare_message(msg4.msg4_bytes, 3, devaddr, false);
             lora_send(&mut lora, msg);
 
-            //Create ratchet
             let as_ratchet = ASRatchet::new(
                 msg4.as_master.try_into().unwrap(),
                 msg4.as_rck.try_into().unwrap(),
@@ -164,8 +167,6 @@ fn handle_first_gen_second_message(
     }
     
     let (msg2_bytes, msg3_receiver) =  msg2_sender.generate_message_2(APPEUI.to_vec(), None)?;
-    // generate dev id, make sure its unique!
-    // TODO: Make sure dev_addr is unique!
     let devaddr: [u8; 4] = rand::random();
     let msg = prepare_message(msg2_bytes, 1, devaddr, false);
 
@@ -203,8 +204,6 @@ fn handle_third_gen_fourth_message(
             opt_ed_static_pub = Some(PublicKey::from(each.ed_static_material));
         }
     }
-
-    // find ed_static_pub kommer fra lookup
     match opt_ed_static_pub {
         Some(ed_static_pub) => {
             let (msg4_sender, as_sck, as_rck, as_master) = msg3verifier.verify_message_3(ed_static_pub.as_bytes())?;
