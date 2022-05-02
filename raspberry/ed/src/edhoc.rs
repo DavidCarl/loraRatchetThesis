@@ -119,7 +119,7 @@ fn edhoc_first_message(msg1_sender: PartyI<Msg1Sender>) -> (Vec<u8>, PartyI<Msg2
     let (msg1_bytes, msg2_receiver) =
     msg1_sender.generate_message_1(METHOD_TYPE_I, SUITE_I).unwrap();
 
-    let payload1 = prepare_message(msg1_bytes, 0, true, [0,0,0,0]);
+    let payload1 = prepare_message(msg1_bytes, 0,  None);
     (payload1, msg2_receiver)
 }
 
@@ -156,7 +156,7 @@ fn edhoc_third_message(
                 Ok(val) => val,
             };
 
-            let payload3 = prepare_message(msg3_bytes, 2, false, msg_struc.devaddr);
+            let payload3 = prepare_message(msg3_bytes, 2, Some(msg_struc.devaddr));
             Ok((payload3, msg4_receiver_verifier))
         }
         None => panic!("No key on KID"),

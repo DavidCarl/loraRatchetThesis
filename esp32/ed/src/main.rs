@@ -1,10 +1,10 @@
-use esp_idf_sys as _;
+use esp_idf_sys as _; // If using the `binstart` feature of `esp-idf-sys`, always keep this module imported
 extern crate alloc;
 
 use std::io::{Read, Write};
 use std::net::TcpStream;
 use std::time::Duration;
-use std::{sync::Arc, thread};
+use std::{env, sync::Arc, thread};
 
 use core::convert::TryInto;
 
@@ -23,13 +23,14 @@ use esp_idf_svc::wifi::*;
 
 use doubleratchet::ed::EDRatchet;
 
+use rand_core::RngCore;
 use crate::hrng::HRNG;
 mod edhoc;
 mod hrng;
 const DHR_CONST: u16 = 256;
 
-const SSID: &str = "RUST_ESP32_STD_DEMO_WIFI_SSID";
-const PASS: &str = "RUST_ESP32_STD_DEMO_WIFI_PASS";
+const SSID: &str =  env!("RUST_ESP32_STD_DEMO_WIFI_SSID");
+const PASS: &str =  env!("RUST_ESP32_STD_DEMO_WIFI_PASS");
 
 fn main() -> Result<()> {
     // initialize wifi stack
@@ -42,11 +43,13 @@ fn main() -> Result<()> {
     let default_nvs = Arc::new(EspDefaultNvs::new()?);
     #[allow(clippy::redundant_clone)]
     #[allow(unused_mut)]
-    let mut _wifi = wifi(
+    let mut wifi = wifi(
         netif_stack.clone(),
         sys_loop_stack.clone(),
         default_nvs.clone(),
     )?;
+
+    // open tcp stream
 
     match TcpStream::connect("192.168.1.227:8888") {
         Ok(mut stream) => handle_connection(&mut stream),
@@ -59,6 +62,7 @@ fn main() -> Result<()> {
 }
 
 fn handle_connection(stream: &mut TcpStream) -> Result<(), Error> {
+
     // perform join procedure
     let (ed_sck, ed_rck, ed_rk, devaddr) = match edhoc::join_procedure(stream) {
         Some(join_output) => join_output,
@@ -73,12 +77,13 @@ fn handle_connection(stream: &mut TcpStream) -> Result<(), Error> {
         HRNG,
     );
 
+    // running continous communications, with a 1 second thread sleep
+    // For every iteration, a uplink message is sent, and the
     stream
-        .set_read_timeout(Some(Duration::from_millis(5000)))
-        .expect("Could not set a read timeout");
+        .set_read_timeout(Some(Duration::from_millis(5000)))?;
     loop {
         thread::sleep(Duration::from_millis(1000));
-        let uplink = ratchet.ratchet_encrypt_payload(&[1; 34]);
+        let uplink = ratchet.ratchet_encrypt_payload(b"uplink");
         stream.write_all(&uplink)?;
         stream.flush()?;
 
@@ -103,12 +108,13 @@ fn handle_connection(stream: &mut TcpStream) -> Result<(), Error> {
                 }
             };
         } else {
+            // if we do not want to send a DHReq, then we'll just listen for a message
             let mut buf = [0; 64];
             let bytes_read = match stream.read(&mut buf) {
                 Ok(bytes) => bytes,
                 _ => continue,
             };
-            let downlink = &buf[0..bytes_read];
+            let downlink = &buf[0..bytes_read]; // if this is not the dhrack, it will still be decrypted and handled
             match ratchet.receive(downlink.to_vec()) {
                 Ok(x) => match x {
                     Some(x) => println!("receiving message from server {:?}", x),

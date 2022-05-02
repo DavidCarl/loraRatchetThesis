@@ -109,7 +109,7 @@ pub fn handle_m_type_two(
     let payload = handle_third_gen_fourth_message(msg.to_vec(), msg3rec);
     match payload {
         Ok(msg4) => {
-            let msg = prepare_message(msg4.msg4_bytes, 3, devaddr, false);
+            let msg = prepare_message(msg4.msg4_bytes, 3, Some(devaddr));
             lora_send(&mut lora, msg);
 
             let as_ratchet = ASRatchet::new(
@@ -168,7 +168,7 @@ fn handle_first_gen_second_message(
     
     let (msg2_bytes, msg3_receiver) =  msg2_sender.generate_message_2(APPEUI.to_vec(), None)?;
     let devaddr: [u8; 4] = rand::random();
-    let msg = prepare_message(msg2_bytes, 1, devaddr, false);
+    let msg = prepare_message(msg2_bytes, 1, Some(devaddr));
 
     Ok(Msg2 {
         msg,
@@ -199,6 +199,8 @@ fn handle_third_gen_fourth_message(
 
     let enc_keys: StaticKeys = load_static_keys("./keys.json".to_string());
     let mut opt_ed_static_pub: Option<PublicKey> = None;
+
+    // looking through stored ED keys, and tried to find a match
     for each in enc_keys.ed_keys {
         if each.kid.to_vec() == ed_kid {
             opt_ed_static_pub = Some(PublicKey::from(each.ed_static_material));
