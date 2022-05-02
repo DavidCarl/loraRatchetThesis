@@ -2,7 +2,7 @@ use std::convert::TryInto;
 
 use esp_idf_sys as _;
 
-use rand_core::{RngCore,Error,CryptoRng};
+use rand_core::{CryptoRng, Error, RngCore};
 pub struct HRNG;
 
 impl CryptoRng for HRNG {}

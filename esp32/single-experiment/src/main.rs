@@ -2,27 +2,23 @@ extern crate alloc;
 
 use esp_idf_sys as _; // If using the `binstart` feature of `esp-idf-sys`, always keep this module imported
 
+use crate::hrng::HRNG;
 use std::convert::TryInto;
 use std::{thread, time::*};
-use crate::hrng::HRNG;
 
-use doubleratchet::r#as::ASRatchet;
 use doubleratchet::ed::EDRatchet;
+use doubleratchet::r#as::ASRatchet;
 const DHR_CONST: u16 = 64;
 
 mod edhoc;
 mod hrng;
 
 fn main() {
-
-
     /*
     Parti I generate message 1
     */
 
     let (ed_sck, ed_rck, rk_ed, as_sck, as_rck, as_rk, devaddr) = edhoc::join();
-
-
 
     let mut ed_ratchet = EDRatchet::new(
         rk_ed.try_into().unwrap(),

@@ -24,7 +24,6 @@ const DEVEUI: [u8; 8] = [0x1, 1, 2, 3, 2, 4, 5, 7];
 const APPEUI: [u8; 8] = [0, 1, 2, 3, 4, 5, 6, 7];
 
 pub fn join_procedure(stream: &mut TcpStream) -> Option<(Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>)> {
-    // The AS first creates keys, and generates initial state for receiving message 1
     let as_static_priv = StaticSecret::from(R_STATIC_MATERIAL);
     let as_static_pub = PublicKey::from(&as_static_priv);
 
@@ -35,12 +34,10 @@ pub fn join_procedure(stream: &mut TcpStream) -> Option<(Vec<u8>, Vec<u8>, Vec<u
     let msg1_receiver = PartyR::new(as_ephemeral_keying, as_static_priv, as_static_pub, as_kid);
 
     let mut buf = [0; 128];
-    // read message 1
     let bytes_read = stream.read(&mut buf).expect("stream reading error");
 
     let phypayload0 = &buf[0..bytes_read];
 
-    // Checking mtype before unpacking
     if phypayload0[0] != 0 {
         let err = build_error_message("bad mtype");
         stream.write(&err).expect("stream writing error");
@@ -48,7 +45,6 @@ pub fn join_procedure(stream: &mut TcpStream) -> Option<(Vec<u8>, Vec<u8>, Vec<u
     }
     let msg1 = unpack_edhoc_first_message(phypayload0);
 
-    // Sending message 2
     let mut fcnt_down = 0;
     let (msg2_sender, deveui, appeui) = match msg1_receiver.handle_message_1_ead(msg1.to_vec()) {
         Err(OwnError(b)) => {
@@ -59,10 +55,8 @@ pub fn join_procedure(stream: &mut TcpStream) -> Option<(Vec<u8>, Vec<u8>, Vec<u
         Ok(val) => val,
     };
 
-    // this is simply an indication that the AS should check the appeui and devui
     assert_eq!(APPEUI.to_vec(), appeui.unwrap());
     assert_eq!(DEVEUI.to_vec(), deveui);
-    // Generate message 2
 
     let (msg2_bytes, msg3_receiver) = match msg2_sender.generate_message_2(APPEUI.to_vec(), None) {
         Err(OwnOrPeerError::PeerError(s)) => {
@@ -79,17 +73,13 @@ pub fn join_procedure(stream: &mut TcpStream) -> Option<(Vec<u8>, Vec<u8>, Vec<u
 
     let mut rng: StdRng = StdRng::from_entropy();
     let devaddr = rng.gen::<[u8; 4]>();
-    // sending message 2, as phypayload 1
 
     let phypayload1 = prepare_edhoc_message(1, fcnt_down, Some(devaddr), msg2_bytes);
     fcnt_down += 1;
 
     stream.write(&phypayload1).expect("stream writing error");
 
-    //unpack message 3, and verify it
-
     let mut buf = [0; 128];
-    // read message 1
     let bytes_read = stream.read(&mut buf).expect("stream reading error");
     let phypayload2 = &buf[0..bytes_read];
 
@@ -114,7 +104,6 @@ pub fn join_procedure(stream: &mut TcpStream) -> Option<(Vec<u8>, Vec<u8>, Vec<u
         }
         Ok(val) => val,
     };
-    // now that the kid of the ed has been retrieved, it's public key can be found
 
     let ed_static_pub = PublicKey::from(I_STATIC_PK_MATERIAL);
 
@@ -134,7 +123,6 @@ pub fn join_procedure(stream: &mut TcpStream) -> Option<(Vec<u8>, Vec<u8>, Vec<u
             }
             Ok(val) => val,
         };
-    // send message 4
 
     let msg4_bytes = match msg4_sender.generate_message_4(None) {
         Err(OwnOrPeerError::PeerError(s)) => {
@@ -191,8 +179,8 @@ fn extract_edhoc_message(msg: &[u8]) -> Option<EdhocMessage> {
 }
 
 fn unpack_edhoc_first_message(msg: &[u8]) -> Vec<u8> {
-    let msg = &msg[1..]; // fjerne mtype
-    let _framecounter = &msg[0..2]; // gemme framecounter
-    let msg = &msg[2..]; // fjerne frame counter
+    let msg = &msg[1..];
+    let _framecounter = &msg[0..2];
+    let msg = &msg[2..]; 
     msg.to_vec()
 }

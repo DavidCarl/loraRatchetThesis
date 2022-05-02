@@ -24,13 +24,20 @@ const APPEUI: [u8; 8] = [0, 1, 2, 3, 4, 5, 6, 7];
 const SUITE_I: u8 = 3;
 const METHOD_TYPE_I: u8 = 0;
 
-pub fn join() -> (Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, [u8; 4]) {
+pub fn join() -> (
+    Vec<u8>,
+    Vec<u8>,
+    Vec<u8>,
+    Vec<u8>,
+    Vec<u8>,
+    Vec<u8>,
+    [u8; 4],
+) {
     let ed_static_priv = StaticSecret::from(ED_STATIC_MATERIAL);
     let ed_static_pub = PublicKey::from(&ed_static_priv);
 
     // AS----------------------------------------------------------------
     // "Generate" an ECDH key pair (this is static, but MUST be ephemeral)
-    // The ECDH private key used by U
     let mut ed_priv = [0; 32];
     HRNG.fill_bytes(&mut ed_priv);
 
@@ -58,8 +65,6 @@ pub fn join() -> (Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, [u8; 4])
 
     let as_kid = [0xA3].to_vec();
 
-    // create keying material
-
     let as_priv = [0; 32];
     HRNG.fill_bytes(&mut ed_priv);
 
@@ -71,7 +76,6 @@ pub fn join() -> (Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, [u8; 4])
         Ok(val) => val,
     };
 
-    // AS should now validate deveui and appeui
     let (msg2_bytes, msg3_receiver) = match msg2_sender.generate_message_2(APPEUI.to_vec(), None) {
         Err(OwnOrPeerError::PeerError(s)) => {
             panic!("Received error msg: {}", s)
@@ -87,8 +91,6 @@ pub fn join() -> (Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, [u8; 4])
     /*///////////////////////////////////////////////////////////////////////////
     /// Initiator receiving and handling message 2, and then generating message 3, and the rck/sck
     ///////////////////////////////////////////////////////////////////// */
-
-    // unpacking message, and getting kid, which we in a realworld situation would use to lookup our key
     let (_as_kid, _appeui, msg2_verifier) =
         match msg2_receiver.unpack_message_2_return_kid(msg2_bytes) {
             Err(OwnOrPeerError::PeerError(s)) => {

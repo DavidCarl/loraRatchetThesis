@@ -1,8 +1,8 @@
-use rand_core::RngCore;
 use crate::hrng::HRNG;
-use std::net::TcpStream;
-use std::io::{Read, Write};
 use core::convert::TryInto;
+use rand_core::RngCore;
+use std::io::{Read, Write};
+use std::net::TcpStream;
 
 use oscore::edhoc::{
     error::{OwnError, OwnOrPeerError},
@@ -41,8 +41,6 @@ pub fn join_procedure(stream: &mut TcpStream) -> Option<(Vec<u8>, Vec<u8>, Vec<u
     let ed_static_priv = StaticSecret::from(I_STATIC_MATERIAL);
     let ed_static_pub = PublicKey::from(&ed_static_priv);
 
-
-
     let mut ed_ephemeral_keying = [0; 32];
     HRNG.fill_bytes(&mut ed_ephemeral_keying);
 
@@ -62,8 +60,7 @@ pub fn join_procedure(stream: &mut TcpStream) -> Option<(Vec<u8>, Vec<u8>, Vec<u
     let mut fcnt_up = 0;
 
     // The ED then prepares the first message into a appropriate phypayload, and send it
-
-    let mut phypayload0 = prepare_edhoc_message(0, fcnt_up, None, msg1_bytes);
+    let phypayload0 = prepare_edhoc_message(0, fcnt_up, None, msg1_bytes);
     fcnt_up += 1;
     stream.write(&phypayload0).expect("error during write");
 
@@ -81,8 +78,7 @@ pub fn join_procedure(stream: &mut TcpStream) -> Option<(Vec<u8>, Vec<u8>, Vec<u
     let devaddr = msg2.devaddr;
 
     // The ED extracts the kid from message 2
-
-    let (kid, appeui, msg2_verifier) =
+    let (_kid, appeui, msg2_verifier) =
         match msg2_receiver.unpack_message_2_return_kid(msg2.edhoc_msg) {
             Err(OwnOrPeerError::PeerError(s)) => {
                 println!("received error {} in message 2, shutting down", s);
@@ -110,7 +106,6 @@ pub fn join_procedure(stream: &mut TcpStream) -> Option<(Vec<u8>, Vec<u8>, Vec<u
     };
 
     // now that the fields of message 2 has been fully verified, the ED can generate message 3
-
     let (msg4_receiver_verifier, msg3_bytes) = match msg3_sender.generate_message_3(None) {
         Err(OwnError(b)) => {
             stream.write(&b).expect("error during write");
@@ -121,11 +116,9 @@ pub fn join_procedure(stream: &mut TcpStream) -> Option<(Vec<u8>, Vec<u8>, Vec<u
 
     // Packing message 3 into a phypayload and sending it
     let phypayload2 = prepare_edhoc_message(2, fcnt_up, Some(devaddr), msg3_bytes);
-    fcnt_up += 1;
     stream.write(&phypayload2).expect("error during write");
 
     // read message 4
-
     let mut buf = [0; 128];
 
     let bytes_read = stream.read(&mut buf).expect("error during read");

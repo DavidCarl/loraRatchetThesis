@@ -21,7 +21,6 @@ fn main() -> Result<(), Error> {
 fn handle_connection(stream: &mut TcpStream) -> Result<(), Error> {
     println!("incoming connection from: {}", stream.peer_addr()?);
 
-    // Running EDHOC join procedure
     let (as_sck, as_rck, as_rk, devaddr) = match edhoc::join_procedure(stream) {
         Some(join_output) => join_output,
         None => return Ok(()),
