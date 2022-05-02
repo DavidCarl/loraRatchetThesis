@@ -4,19 +4,17 @@ use esp_idf_sys as _; // If using the `binstart` feature of `esp-idf-sys`, alway
 
 use std::convert::TryInto;
 use std::{thread, time::*};
+use crate::hrng::HRNG;
 
 use doubleratchet::r#as::ASRatchet;
 use doubleratchet::ed::EDRatchet;
-//use embedded_hal::digital::v1::OutputPin;
 const DHR_CONST: u16 = 64;
 
 mod edhoc;
-mod esp32;
+mod hrng;
 
 fn main() {
-    // Temporary. Will disappear once ESP-IDF 4.4 is released, but for now it is necessary to call this function once,
-    // or else some patches to the runtime implemented by esp-idf-sys might not link properly.
-    esp_idf_sys::link_patches();
+
 
     /*
     Parti I generate message 1
@@ -24,16 +22,14 @@ fn main() {
 
     let (ed_sck, ed_rck, rk_ed, as_sck, as_rck, as_rk, devaddr) = edhoc::join();
 
-    let hrng = esp32::HRNG;
 
-    let hrng1 = esp32::HRNG;
 
     let mut ed_ratchet = EDRatchet::new(
         rk_ed.try_into().unwrap(),
         ed_rck.try_into().unwrap(),
         ed_sck.try_into().unwrap(),
         devaddr.clone(),
-        hrng,
+        HRNG,
     );
 
     let mut as_ratchet = ASRatchet::new(
@@ -41,7 +37,7 @@ fn main() {
         as_rck.try_into().unwrap(),
         as_sck.try_into().unwrap(),
         devaddr.clone(),
-        hrng1,
+        HRNG,
     );
 
     loop {

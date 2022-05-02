@@ -7,7 +7,7 @@ use rand_core::RngCore;
 
 use x25519_dalek_ng::{PublicKey, StaticSecret};
 
-use crate::esp32::HRNG;
+use crate::hrng::HRNG;
 
 const ED_STATIC_MATERIAL: [u8; 32] = [
     154, 31, 220, 202, 59, 128, 114, 237, 96, 201, 18, 178, 29, 143, 85, 133, 70, 32, 155, 41, 124,

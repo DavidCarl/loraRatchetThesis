@@ -23,14 +23,14 @@ use esp_idf_svc::wifi::*;
 
 use doubleratchet::ed::EDRatchet;
 
-use rand_core::OsRng;
-
+use rand_core::RngCore;
+use crate::hrng::HRNG;
 mod edhoc;
-
+mod hrng;
 const DHR_CONST: u16 = 256;
 
-const SSID: &str = env!("RUST_ESP32_STD_DEMO_WIFI_SSID");
-const PASS: &str = env!("RUST_ESP32_STD_DEMO_WIFI_PASS");
+const SSID: &str = "RUST_ESP32_STD_DEMO_WIFI_SSID";
+const PASS: &str = "RUST_ESP32_STD_DEMO_WIFI_PASS";
 
 fn main() -> Result<()> {
     // initialize wifi stack
@@ -60,6 +60,7 @@ fn main() -> Result<()> {
 }
 
 fn handle_connection(stream: &mut TcpStream) -> Result<(), Error> {
+
     // perform join procedure
     let (ed_sck, ed_rck, ed_rk, devaddr) = match edhoc::join_procedure(stream) {
         Some(join_output) => join_output,
@@ -71,7 +72,7 @@ fn handle_connection(stream: &mut TcpStream) -> Result<(), Error> {
         ed_rck.try_into().unwrap(),
         ed_sck.try_into().unwrap(),
         devaddr.try_into().unwrap(),
-        OsRng,
+        HRNG,
     );
 
     // running continous communications, with a 1 second thread sleep

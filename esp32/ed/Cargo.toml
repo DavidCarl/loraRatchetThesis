@@ -17,7 +17,6 @@ pio = ["esp-idf-sys/pio"]
 
 [dependencies]
 anyhow = {version = "1", features = ["backtrace"]}
-esp-idf-sys = { version = "0.31", features = ["binstart"] }
 embedded-svc = "0.20.3"
 esp-idf-svc = "0.40.0"
 oscore = {git = "https://github.com/DavidCarl/oscore"}
@@ -29,7 +28,9 @@ serde_bytes = { version = "0.11.1", default-features = false, features = ["alloc
 x25519-dalek-ng = { version = "1.1.1", default-features = false, features = ["u32_backend"] }
 rand_core = {version = "0.6"}
 rand = "*"
+esp-idf-sys = { version = "0.31", features = ["binstart"] }
 
 [build-dependencies]
 embuild = "0.28"
 anyhow = "1"
+ 
