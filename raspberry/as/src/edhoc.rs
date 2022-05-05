@@ -1,5 +1,4 @@
-use rand::{rngs::StdRng, Rng, SeedableRng};
-use rand_core::OsRng;
+use rand_core::{OsRng,RngCore};
 
 use rppal::gpio::OutputPin;
 use rppal::spi::Spi;
@@ -56,8 +55,10 @@ pub fn handle_m_type_zero(
     let as_static_pub = PublicKey::from(&as_static_priv);
 
     let as_kid = [0xA3].to_vec();
-    let mut r: StdRng = StdRng::from_entropy();
-    let as_ephemeral_keying = r.gen::<[u8; 32]>();
+
+    let mut as_ephemeral_keying = [0u8;32];
+    OsRng.fill_bytes(&mut as_ephemeral_keying);
+    
 
     let msg1_receiver = PartyR::new(as_ephemeral_keying, as_static_priv, as_static_pub, as_kid);
     let res = handle_first_gen_second_message(msg.to_vec(), msg1_receiver);

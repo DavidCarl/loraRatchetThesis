@@ -15,8 +15,8 @@ use x25519_dalek_ng::{PublicKey, StaticSecret};
 const DEVEUI: [u8; 8] = [0x1, 1, 2, 3, 2, 4, 5, 7];
 const APPEUI: [u8; 8] = [0, 1, 2, 3, 4, 5, 6, 7];
 
-const SUITE_I: u8 = 3;
-const METHOD_TYPE_I: u8 = 0;
+const SUITE_ED: u8 = 0;
+const METHOD_TYPE_ED: u8 = 3;
 const ED_KID: [u8; 1] = [0xA2];
 
 const I_STATIC_MATERIAL: [u8; 32] = [
@@ -36,6 +36,17 @@ pub struct EdhocMessage {
     pub edhoc_msg: Vec<u8>,
 }
 
+
+
+/// Runs the join procedure through the tcpstream with the as
+///
+/// # Arguments
+///
+/// * `stream` - tcpstream connected to the as
+/// 
+/// # returns 
+/// * (sending chain key, receiving chain key, root key, devaddr)
+
 pub fn join_procedure(stream: &mut TcpStream) -> Option<(Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>)> {
     // The ED first creates keys, and generates initial state for sending
     let ed_static_priv = StaticSecret::from(I_STATIC_MATERIAL);
@@ -54,7 +65,7 @@ pub fn join_procedure(stream: &mut TcpStream) -> Option<(Vec<u8>, Vec<u8>, Vec<u
     );
 
     let (msg1_bytes, msg2_receiver) = msg1_sender
-        .generate_message_1(METHOD_TYPE_I, SUITE_I)
+        .generate_message_1(METHOD_TYPE_ED, SUITE_ED)
         .unwrap();
 
     let mut fcnt_up = 0;
@@ -65,7 +76,7 @@ pub fn join_procedure(stream: &mut TcpStream) -> Option<(Vec<u8>, Vec<u8>, Vec<u
     stream.write(&phypayload0).expect("error during write");
 
     // The second message is now received from the AS, checked for mtype, and the phypayload fields are extracted
-    let mut buf = [0; 128];
+    let mut buf = [0; 64];
     let bytes_read = stream.read(&mut buf).expect("error during read");
     let phypayload1 = &buf[0..bytes_read];
 
@@ -74,7 +85,7 @@ pub fn join_procedure(stream: &mut TcpStream) -> Option<(Vec<u8>, Vec<u8>, Vec<u
         stream.write(&err).expect("error during write");
         return None;
     }
-    let msg2 = extract_edhoc_message(phypayload1)?;
+    let msg2 = unpack_edhoc_message(phypayload1)?;
     let devaddr = msg2.devaddr;
 
     // The ED extracts the kid from message 2
@@ -119,7 +130,7 @@ pub fn join_procedure(stream: &mut TcpStream) -> Option<(Vec<u8>, Vec<u8>, Vec<u
     stream.write(&phypayload2).expect("error during write");
 
     // read message 4
-    let mut buf = [0; 128];
+    let mut buf = [0; 64];
 
     let bytes_read = stream.read(&mut buf).expect("error during read");
     let phypayload3 = &buf[0..bytes_read];
@@ -129,7 +140,7 @@ pub fn join_procedure(stream: &mut TcpStream) -> Option<(Vec<u8>, Vec<u8>, Vec<u
         stream.write(&err).expect("error during write");
         return None;
     }
-    let msg4 = extract_edhoc_message(phypayload3)?;
+    let msg4 = unpack_edhoc_message(phypayload3)?;
     let out = msg4_receiver_verifier.handle_message_4(msg4.edhoc_msg);
 
     let (ed_sck, ed_rck, ed_rk) = match out {
@@ -164,7 +175,7 @@ fn prepare_edhoc_message(
     buffer
 }
 
-fn extract_edhoc_message(msg: &[u8]) -> Option<EdhocMessage> {
+fn unpack_edhoc_message(msg: &[u8]) -> Option<EdhocMessage> {
     let m_type = msg[0];
     let fcntup = msg[1..3].try_into().ok()?;
     let devaddr = msg[3..7].try_into().ok()?;

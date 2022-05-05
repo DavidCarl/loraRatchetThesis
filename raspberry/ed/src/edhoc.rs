@@ -12,7 +12,9 @@ use oscore::edhoc::{
 
 use std::fmt;
 use std::{error::Error as stdError, result::Result};
-use rand::{rngs::StdRng, Rng, SeedableRng};
+
+
+use rand_core::{OsRng, RngCore};
 
 use crate::{
     filehandling::{load_static_keys, StaticKeys, Config},
@@ -20,8 +22,8 @@ use crate::{
     phypayload_handler::{ prepare_message, remove_message}
 };
 
-const SUITE_I: u8 = 3;
-const METHOD_TYPE_I: u8 = 0;
+const SUITE_ED: u8 = 0;
+const METHOD_TYPE_ED: u8 = 3;
 
 #[derive(Debug)]
 struct MyError(String);
@@ -51,8 +53,10 @@ pub fn handshake(
     let ed_kid = [0xA2].to_vec();
     let ed_static_priv = StaticSecret::from(enc_keys.ed_static_material);
     let ed_static_pub = PublicKey::from(&ed_static_priv);
-    let mut r: StdRng = StdRng::from_entropy();
-    let ed_ephemeral_keying = r.gen::<[u8; 32]>();
+
+
+    let mut ed_ephemeral_keying = [0u8;32];
+    OsRng.fill_bytes(&mut ed_ephemeral_keying);
 
     let msg1_sender = PartyI::new(
         deveui.to_vec(),
@@ -117,7 +121,7 @@ pub fn handshake(
 
 fn edhoc_first_message(msg1_sender: PartyI<Msg1Sender>) -> (Vec<u8>, PartyI<Msg2Receiver>) {
     let (msg1_bytes, msg2_receiver) =
-    msg1_sender.generate_message_1(METHOD_TYPE_I, SUITE_I).unwrap();
+    msg1_sender.generate_message_1(METHOD_TYPE_ED, SUITE_ED).unwrap();
 
     let payload1 = prepare_message(msg1_bytes, 0,  None);
     (payload1, msg2_receiver)

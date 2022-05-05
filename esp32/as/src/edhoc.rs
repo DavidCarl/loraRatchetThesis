@@ -7,7 +7,8 @@ use oscore::edhoc::{
 use std::net::{TcpStream};
 use std::io::{Read, Write};
 
-use rand::{rngs::StdRng, Rng, SeedableRng};
+use rand_core::{OsRng,RngCore};
+
 
 use x25519_dalek_ng::{PublicKey, StaticSecret};
 
@@ -22,13 +23,22 @@ const I_STATIC_PK_MATERIAL: [u8; 32] = [
 
 const DEVEUI: [u8; 8] = [0x1, 1, 2, 3, 2, 4, 5, 7];
 const APPEUI: [u8; 8] = [0, 1, 2, 3, 4, 5, 6, 7];
-
+/// Runs the join procedure through the tcpstream with the ed
+///
+/// # Arguments
+///
+/// * `stream` - tcpstream connected to the as
+/// 
+/// # returns 
+/// * (sending chain key, receiving chain key, root key, devaddr)
 pub fn join_procedure(stream: &mut TcpStream) -> Option<(Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>)> {
     let as_static_priv = StaticSecret::from(R_STATIC_MATERIAL);
     let as_static_pub = PublicKey::from(&as_static_priv);
 
-    let mut rng: StdRng = StdRng::from_entropy();
-    let as_ephemeral_keying = rng.gen::<[u8; 32]>();
+
+
+    let mut as_ephemeral_keying = [0u8;32];
+    OsRng.fill_bytes(&mut as_ephemeral_keying);
 
     let as_kid = [0xA3].to_vec();
     let msg1_receiver = PartyR::new(as_ephemeral_keying, as_static_priv, as_static_pub, as_kid);
@@ -71,8 +81,8 @@ pub fn join_procedure(stream: &mut TcpStream) -> Option<(Vec<u8>, Vec<u8>, Vec<u
         Ok(val) => val,
     };
 
-    let mut rng: StdRng = StdRng::from_entropy();
-    let devaddr = rng.gen::<[u8; 4]>();
+    let mut devaddr = [0u8; 4];
+    OsRng.fill_bytes(&mut devaddr);
 
     let phypayload1 = prepare_edhoc_message(1, fcnt_down, Some(devaddr), msg2_bytes);
     fcnt_down += 1;
@@ -90,7 +100,7 @@ pub fn join_procedure(stream: &mut TcpStream) -> Option<(Vec<u8>, Vec<u8>, Vec<u
         return None;
     }
 
-    let msg3 = extract_edhoc_message(phypayload2)?;
+    let msg3 = unpack_edhoc_message(phypayload2)?;
 
     let (msg3verifier, _kid) = match msg3_receiver.unpack_message_3_return_kid(msg3.edhoc_msg) {
         Err(OwnOrPeerError::PeerError(s)) => {
@@ -126,7 +136,11 @@ pub fn join_procedure(stream: &mut TcpStream) -> Option<(Vec<u8>, Vec<u8>, Vec<u
 
     let msg4_bytes = match msg4_sender.generate_message_4(None) {
         Err(OwnOrPeerError::PeerError(s)) => {
-            panic!("Received error msg: {}", s)
+            println!(
+                "received error {} while generating message 4, shutting down",
+                s
+            );
+            return None;
         }
         Err(OwnOrPeerError::OwnError(b)) => {
             println!("sending error {:?}, ", b);
@@ -165,7 +179,7 @@ fn prepare_edhoc_message(
     buffer
 }
 
-fn extract_edhoc_message(msg: &[u8]) -> Option<EdhocMessage> {
+fn unpack_edhoc_message(msg: &[u8]) -> Option<EdhocMessage> {
     let m_type = msg[0];
     let fcntup = msg[1..3].try_into().ok()?;
     let devaddr = msg[3..7].try_into().ok()?;
