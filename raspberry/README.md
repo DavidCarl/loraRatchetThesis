@@ -19,7 +19,7 @@ For the ARM rust toolchain, we used [cross](https://github.com/cross-rs/cross). 
 
 ### Wiring Diagram
 
-![Wiring Diagram](https://github.com/DavidCarl/loraRatchetThesis/tree/main/raspberry/resources/wiring_diagram.png)
+![Wiring Diagram](https://github.com/DavidCarl/loraRatchetThesis/blob/main/raspberry/resources/wiring_diagram.png?raw=true)
 
 
 ## Build
