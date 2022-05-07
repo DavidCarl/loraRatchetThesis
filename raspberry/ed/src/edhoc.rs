@@ -19,7 +19,7 @@ use rand_core::{OsRng, RngCore};
 use crate::{
     filehandling::{load_static_keys, StaticKeys, Config},
     lora_handler::{recieve_window,lora_send},
-    phypayload_handler::{ prepare_message, remove_message}
+    phypayload_handler::{ prepare_message, unwrap_message}
 };
 
 const SUITE_ED: u8 = 0;
@@ -43,6 +43,16 @@ pub struct RatchetKeys {
     pub devaddr: Vec<u8>,
 }
 
+/// This functions starts the handshake for the ED. 
+/// 
+/// # Arguments
+/// 
+/// * `lora` - This is the active lora module
+/// * `enc_keys` - This is our StaticKeys struct, theses keys are used for parts of the handshake.
+/// * `deveui` - This devEUI, this is
+/// * `appeui` - The appEUI, this should be the same for the ED and AS
+/// * `config` - The application configuration
+/// 
 pub fn handshake(
     lora: &mut LoRa<Spi, OutputPin, OutputPin>,
     enc_keys: StaticKeys,
@@ -119,6 +129,13 @@ pub fn handshake(
     }
 }
 
+/// This functions generates the very first message for the handhake necessary in the EDHOC handshake, and 
+/// generates the necessecary information to verify the next message.
+/// 
+/// # Arguments
+/// 
+/// * `msg1_sender` - This is needed to generate the first message correctly
+/// 
 fn edhoc_first_message(msg1_sender: PartyI<Msg1Sender>) -> (Vec<u8>, PartyI<Msg2Receiver>) {
     let (msg1_bytes, msg2_receiver) =
     msg1_sender.generate_message_1(METHOD_TYPE_ED, SUITE_ED).unwrap();
@@ -131,7 +148,7 @@ fn edhoc_third_message(
     msg2: Vec<u8>,
     msg2_receiver: PartyI<Msg2Receiver>,
 ) -> Result<(Vec<u8>, PartyI<Msg4ReceiveVerify>), OwnOrPeerError> {
-    let msg_struc = remove_message(msg2);
+    let msg_struc = unwrap_message(msg2);
 
     let (as_kid, _ad_r, msg2_verifier) = msg2_receiver.unpack_message_2_return_kid(msg_struc.msg)?;
 
@@ -178,7 +195,7 @@ fn handle_message_fourth(
     msg: Vec<u8>,
     msg4_receiver_verifier: PartyI<Msg4ReceiveVerify>,
 ) -> Result<FourthMessage, oscore::edhoc::error::OwnOrPeerError> {
-    let msg_struct = remove_message(msg);
+    let msg_struct = unwrap_message(msg);
     let (ed_sck, ed_rck, ed_rk) = msg4_receiver_verifier.handle_message_4(msg_struct.msg)?;
     Ok(FourthMessage{ed_sck, ed_rck, ed_rk, devaddr: msg_struct.devaddr.to_vec()})
 

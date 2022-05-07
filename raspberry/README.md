@@ -17,9 +17,10 @@ For the ARM rust toolchain, we used [cross](https://github.com/cross-rs/cross). 
 
 ## Run
 
-### Wiring
+### Wiring Diagram
 
-#! TODO <Insert wiring diagram here>
+![alt text](hhttps://github.com/DavidCarl/loraRatchetThesis/tree/main/raspberry/resources/wiring_diagram.png "Wiring diagram")
+
 
 ## Build
 

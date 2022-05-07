@@ -20,7 +20,7 @@ use std::collections::HashMap;
 use crate::{
     filehandler::{load_static_keys, StaticKeys},
     lora_handler::{lora_send},
-    phypayload_handler::{prepare_message, remove_message},
+    phypayload_handler::{prepare_message, unwrap_message},
 };
 
 const APPEUI: [u8; 8] = [0, 1, 2, 3, 4, 5, 6, 7];
@@ -47,7 +47,7 @@ pub fn handle_m_type_zero(
     mut lora: LoRa<Spi, OutputPin, OutputPin>,
     as_static_material: [u8; 32],
 ) -> TypeZero {
-    let phypayload = remove_message(buffer, true);//unpack_edhoc_first_message(buffer);
+    let phypayload = unwrap_message(buffer, true);//unpack_edhoc_first_message(buffer);
 
     let msg = phypayload.msg;
 
@@ -102,7 +102,7 @@ pub fn handle_m_type_two(
     mut connections: HashMap<[u8; 4], ASRatchet<OsRng>>,
     mut lora: LoRa<Spi, OutputPin, OutputPin>,
 ) -> TypeTwo {
-    let phypayload = remove_message(buffer, false);//unpack_edhoc_message(buffer);
+    let phypayload = unwrap_message(buffer, false);//unpack_edhoc_message(buffer);
     let msg = phypayload.msg;
     let devaddr = phypayload.devaddr;
     let msg3rec = msg3_receivers.remove(&devaddr).unwrap();

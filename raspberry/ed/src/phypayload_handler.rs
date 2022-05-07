@@ -7,7 +7,12 @@ pub struct EdhocPhypayload {
     pub msg: Vec<u8>,
 }
 
-pub fn remove_message(ogmsg: Vec<u8>) -> EdhocPhypayload {
+/// Here we seperate the function into multiple smaller information bites, so its more usefull.
+///     
+/// # Arguments
+///
+/// * `ogmsg` - the message which needs to be handled.
+pub fn unwrap_message(ogmsg: Vec<u8>) -> EdhocPhypayload {
     EdhocPhypayload {
         _m: ogmsg[0],
         _fcntdown: ogmsg[1..3].try_into().unwrap(),
@@ -20,7 +25,7 @@ pub fn remove_message(ogmsg: Vec<u8>) -> EdhocPhypayload {
 ///     
 /// # Arguments
 ///
-/// * `msg` - The message you want to have padded with informatino
+/// * `msg` - The message you want to have padded with information
 /// * `mtype` - The message type usually `0` or `2`
 /// * `devaddr` - The dev addresse of the device
 /// * `first_msg` - if its the first message being sent

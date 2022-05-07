@@ -14,7 +14,7 @@ pub struct EdhocPhypayload {
 ///
 /// * `ogmsg` - the message which needs to be handled.
 /// * `first` - Is it the first message, in that case, no devaddr should be appended
-pub fn remove_message(ogmsg: Vec<u8>, first: bool) -> EdhocPhypayload {
+pub fn unwrap_message(ogmsg: Vec<u8>, first: bool) -> EdhocPhypayload {
     if first {
         EdhocPhypayload {
             _m: ogmsg[0],
