@@ -19,7 +19,7 @@ const FREQUENCY: i64 = 915;
 fn main() {
     let config: filehandling::Config = filehandling::load_config("./config.json".to_string());
     let enc_keys: filehandling::StaticKeys = filehandling::load_static_keys("./keys.json".to_string());
-    let lora = &mut setup_sx127x(125000, 7);
+    let lora = &mut setup_sx127x(250000, 7);
     let rtn = edhoc::handshake(lora, enc_keys, config.deveui, config.appeui, config).unwrap();
     ratchet::run(lora, rtn, config.dhr_const, config);
 }
