@@ -19,36 +19,16 @@ mod edhoc;
 mod filehandler;
 mod lora_handler;
 mod phypayload_handler;
-use lora_handler::lora_send;
 const LORA_CS_PIN: u8 = 8;
 const LORA_RESET_PIN: u8 = 22;
 const FREQUENCY: i64 = 915;
 
 fn main() {
-    let lora = setup_sx127x(125000, 7);
+    let lora = lora_handler::setup_sx127x(250000, 7);
     main_loop(lora);
 }
 
-/// This function creates a sx127x object, which enables us to send and recieve messages by
-/// using the sx1276 lora module.
-///
-/// # Arguments
-///
-/// * `bandwith` - Sets the signal bandwith of the module. supported values are `800` Hz, `10400` Hz, `15600` Hz, `20800` Hz, `31250` Hz, `41700` Hz, `62500` Hz, `125000` Hz and `250000` Hz
-/// * `spreadfactor` - Sets the spreading factor of the radio. Supported values are between 6 and 12. If a spreading factor of 6 is set, implicit header mode must be used to transmit and receive packets.
-fn setup_sx127x(bandwidth: i64, spreadfactor: u8) -> LoRa<Spi, OutputPin, OutputPin> {
-    let spi = Spi::new(Bus::Spi0, SlaveSelect::Ss0, 8_000_000, Mode::Mode0).unwrap();
 
-    let gpio = Gpio::new().unwrap();
-
-    let cs = gpio.get(LORA_CS_PIN).unwrap().into_output();
-    let reset = gpio.get(LORA_RESET_PIN).unwrap().into_output();
-
-    let mut lora = sx127x_lora::LoRa::new(spi, cs, reset, FREQUENCY, &mut Delay).unwrap();
-    let _ = lora.set_signal_bandwidth(bandwidth);
-    let _ = lora.set_spreading_factor(spreadfactor);
-    lora
-}
 
 /// Starting the server application.
 /// This function handles all the logic behind listening & recieving messages.
@@ -164,7 +144,7 @@ fn handle_ratchet_message(
                 }
             };
             if sendnew {
-                lora_send(&mut lora, newout);
+               lora_handler::lora_send(&mut lora, newout);
             }
             connections.insert(devaddr, lora_ratchet);
         }
