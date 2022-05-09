@@ -1,5 +1,4 @@
-use core::convert::TryInto;
-use std::{env, sync::Arc, thread};
+use std::{env, sync::Arc};
 use std::time::Duration;
 
 use embedded_svc::httpd::*;

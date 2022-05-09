@@ -19,7 +19,7 @@ pio = ["esp-idf-sys/pio"]
 anyhow = {version = "1", features = ["backtrace"]}
 embedded-svc = "0.20.3"
 esp-idf-svc = "0.40.0"
-oscore = {git = "https://github.com/DavidCarl/oscore"}
+edhoc = {git = "https://github.com/DavidCarl/edhoc"}
 doubleratchet =  { git = "https://github.com/S3j5b0/Double_ratchet" }
 coap-lite = { version = "0.9.0", default-features = false }
 serde = { version = "1.0.97", default-features = false, features = ["derive", "alloc"] }

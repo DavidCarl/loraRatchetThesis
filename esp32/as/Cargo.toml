@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 doubleratchet =  { git = "https://github.com/S3j5b0/Double_ratchet" }
 
-oscore  = { git = "https://github.com/DavidCarl/oscore" }
+edhoc  = { git = "https://github.com/DavidCarl/edhoc" }
 coap-lite = { version = "0.8.1", default-features = false }
 serde = { version = "1.0.97", default-features = false, features = ["derive", "alloc"] }
 serde_cbor = { version = "0.11.2", default-features = false, features = ["alloc"] }

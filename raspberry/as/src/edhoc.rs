@@ -3,7 +3,7 @@ use rand_core::{OsRng,RngCore};
 use rppal::gpio::OutputPin;
 use rppal::spi::Spi;
 
-use oscore::edhoc::{
+use ::edhoc::edhoc::{
     api::{Msg1Receiver, Msg3Receiver},
     error::{OwnError, OwnOrPeerError},
     PartyR,
@@ -25,11 +25,10 @@ use crate::{
 
 const APPEUI: [u8; 8] = [0, 1, 2, 3, 4, 5, 6, 7];
 
-
-
 pub struct TypeZero {
     pub msg3_receivers: HashMap<[u8; 4], PartyR<Msg3Receiver>>,
     pub lora: LoRa<Spi, OutputPin, OutputPin>,
+    pub fcntdownmap: HashMap<[u8; 4], u16>
 }
 
 /// Handle the zeroth [[0]] message in the EDHOC handshake, initiate the handshake from a AS point of view with a new ED. This function handle all the calls to the different libraries. 
@@ -46,6 +45,7 @@ pub fn handle_m_type_zero(
     mut msg3_receivers: HashMap<[u8; 4], PartyR<Msg3Receiver>>,
     mut lora: LoRa<Spi, OutputPin, OutputPin>,
     as_static_material: [u8; 32],
+    mut fcntdownmap: HashMap<[u8; 4], u16>
 ) -> TypeZero {
     let phypayload = unwrap_message(buffer, true);//unpack_edhoc_first_message(buffer);
 
@@ -66,6 +66,7 @@ pub fn handle_m_type_zero(
         Ok(rtn) => {
             msg3_receivers.insert(rtn.devaddr, rtn.msg3_receiver);
             lora_send(&mut lora,rtn.msg);
+            fcntdownmap.insert(rtn.devaddr, 1);
         }
         Err(error) => match error {
             OwnOrPeerError::OwnError(x) => {
@@ -76,9 +77,10 @@ pub fn handle_m_type_zero(
             }
         },
     }
-    TypeZero {
+    return TypeZero {
         msg3_receivers,
         lora,
+        fcntdownmap
     }
 }
 
@@ -86,6 +88,7 @@ pub struct TypeTwo {
     pub msg3_receivers: HashMap<[u8; 4], PartyR<Msg3Receiver>>,
     pub connections: HashMap<[u8; 4], ASRatchet<OsRng>>,
     pub lora: LoRa<Spi, OutputPin, OutputPin>,
+    pub fcntdownmap: HashMap<[u8; 4], u16>
 }
 
 /// handle the second [[2]] message in the EDHOC handshake, and transmit the third [[3]] message in the sequence.
@@ -101,6 +104,7 @@ pub fn handle_m_type_two(
     mut msg3_receivers: HashMap<[u8; 4], PartyR<Msg3Receiver>>,
     mut connections: HashMap<[u8; 4], ASRatchet<OsRng>>,
     mut lora: LoRa<Spi, OutputPin, OutputPin>,
+    mut fcntdownmap: HashMap<[u8; 4], u16>
 ) -> TypeTwo {
     let phypayload = unwrap_message(buffer, false);//unpack_edhoc_message(buffer);
     let msg = phypayload.msg;
@@ -108,9 +112,16 @@ pub fn handle_m_type_two(
     let msg3rec = msg3_receivers.remove(&devaddr).unwrap();
 
     let payload = handle_third_gen_fourth_message(msg.to_vec(), msg3rec);
+    
+    let fcntdown_op = fcntdownmap.remove(&devaddr);
+    let fcntdown = match fcntdown_op {
+        Some(number) => number,
+        None => 0,
+    };
+    
     match payload {
         Ok(msg4) => {
-            let msg = prepare_message(msg4.msg4_bytes, 3, Some(devaddr));
+            let (msg, fcntdown) = prepare_message(msg4.msg4_bytes, 3, Some(devaddr), fcntdown);
             lora_send(&mut lora, msg);
 
             let as_ratchet = ASRatchet::new(
@@ -121,6 +132,7 @@ pub fn handle_m_type_two(
                 OsRng,
             );
             connections.insert(devaddr, as_ratchet);
+            fcntdownmap.insert(devaddr, fcntdown);
         }
         Err(error) => match error {
             OwnOrPeerError::OwnError(x) => {
@@ -131,10 +143,13 @@ pub fn handle_m_type_two(
             }
         },
     }
+
+
     TypeTwo {
         msg3_receivers,
         connections,
         lora,
+        fcntdownmap
     }
 }
 
@@ -169,7 +184,9 @@ fn handle_first_gen_second_message(
     
     let (msg2_bytes, msg3_receiver) =  msg2_sender.generate_message_2(APPEUI.to_vec(), None)?;
     let devaddr: [u8; 4] = rand::random();
-    let msg = prepare_message(msg2_bytes, 1, Some(devaddr));
+    
+    let (msg, _fcntdown) = prepare_message(msg2_bytes, 1, Some(devaddr), 0);
+
 
     Ok(Msg2 {
         msg,

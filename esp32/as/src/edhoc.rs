@@ -1,4 +1,4 @@
-use oscore::edhoc::{
+use ::edhoc::edhoc::{
     error::{OwnError, OwnOrPeerError},
     util::build_error_message,
     PartyR,

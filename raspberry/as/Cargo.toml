@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-oscore = {git = "https://github.com/DavidCarl/oscore"}
+edhoc = {git = "https://github.com/DavidCarl/edhoc"}
 doubleratchet = {git = "https://github.com/S3j5b0/Double_ratchet"}
 rand = "*"
 rand_core = "0.6.3"

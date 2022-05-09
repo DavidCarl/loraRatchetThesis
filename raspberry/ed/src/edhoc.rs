@@ -4,7 +4,7 @@ use rppal::gpio::OutputPin;
 use rppal::spi::Spi;
 use x25519_dalek_ng::{StaticSecret, PublicKey};
 
-use oscore::edhoc::{
+use ::edhoc::edhoc::{
     api::{Msg1Sender, Msg2Receiver, Msg4ReceiveVerify},
     error::{OwnError, OwnOrPeerError},
     PartyI,
@@ -194,7 +194,7 @@ struct FourthMessage {
 fn handle_message_fourth(
     msg: Vec<u8>,
     msg4_receiver_verifier: PartyI<Msg4ReceiveVerify>,
-) -> Result<FourthMessage, oscore::edhoc::error::OwnOrPeerError> {
+) -> Result<FourthMessage, OwnOrPeerError> {
     let msg_struct = unwrap_message(msg);
     let (ed_sck, ed_rck, ed_rk) = msg4_receiver_verifier.handle_message_4(msg_struct.msg)?;
     Ok(FourthMessage{ed_sck, ed_rck, ed_rk, devaddr: msg_struct.devaddr.to_vec()})

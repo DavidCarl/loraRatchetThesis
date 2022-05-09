@@ -4,7 +4,7 @@ use rand_core::RngCore;
 use std::io::{Read, Write};
 use std::net::TcpStream;
 
-use oscore::edhoc::{
+use ::edhoc::edhoc::{
     error::{OwnError, OwnOrPeerError},
     util::build_error_message,
     PartyI,

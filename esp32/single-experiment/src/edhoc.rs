@@ -1,4 +1,4 @@
-use oscore::edhoc::{
+use ::edhoc::edhoc::{
     error::{OwnError, OwnOrPeerError},
     PartyI, PartyR,
 };

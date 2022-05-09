@@ -21,6 +21,18 @@ For the ARM rust toolchain, we used [cross](https://github.com/cross-rs/cross). 
 
 ![Wiring Diagram](https://github.com/DavidCarl/loraRatchetThesis/blob/main/raspberry/resources/wiring_diagram.png?raw=true)
 
+Wiring in text:
+Raspberry Pi <-> SX1276
+
+| Pin | name       |      | Name  |
+|-----|------------|------|-------|
+| 06  | GPIO22     | <->  | GND   |
+| 15  | 3.3        | <->  | RST   |
+| 17  | SPI_MOSI   | <->  | VDD   |
+| 19  | SPI_MISO   | <->  | MOSI  |
+| 21  | SPI_CLK    | <->  | MISO  |
+| 23  | SPI_CLK    | <->  | SCK   |
+| 24  | SPI_CE0_N  | <->  | NSS   |
 
 ## Build
 

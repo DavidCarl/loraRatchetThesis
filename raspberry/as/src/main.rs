@@ -1,17 +1,18 @@
 extern crate linux_embedded_hal as hal;
 extern crate sx127x_lora;
 
+use ::edhoc::edhoc::{api::Msg3Receiver, PartyR};
 use rand_core::OsRng;
 
-use oscore::edhoc::{api::Msg3Receiver, PartyR};
+//use edhoc::{api::Msg3Receiver, PartyR};
 
 use doubleratchet::r#as::ASRatchet;
 
 use sx127x_lora::LoRa;
 
-use rppal::gpio::{Gpio, OutputPin};
+use rppal::gpio::OutputPin;
 use rppal::hal::Delay;
-use rppal::spi::{Bus, Mode, SlaveSelect, Spi};
+use rppal::spi::Spi;
 
 use std::collections::HashMap;
 
@@ -19,16 +20,11 @@ mod edhoc;
 mod filehandler;
 mod lora_handler;
 mod phypayload_handler;
-const LORA_CS_PIN: u8 = 8;
-const LORA_RESET_PIN: u8 = 22;
-const FREQUENCY: i64 = 915;
 
 fn main() {
     let lora = lora_handler::setup_sx127x(250000, 7);
     main_loop(lora);
 }
-
-
 
 /// Starting the server application.
 /// This function handles all the logic behind listening & recieving messages.
@@ -46,6 +42,7 @@ fn main_loop(mut lora: LoRa<Spi, OutputPin, OutputPin>) {
     // and access the correct data based on the clients devaddr.
     let mut msg3_receivers: HashMap<[u8; 4], PartyR<Msg3Receiver>> = HashMap::new();
     let mut connections: HashMap<[u8; 4], ASRatchet<OsRng>> = HashMap::new();
+    let mut fcntdownmap: HashMap<[u8; 4], u16> = HashMap::new();
     loop {
         let poll = lora.poll_irq(None, &mut Delay);
         match poll {
@@ -60,41 +57,32 @@ fn main_loop(mut lora: LoRa<Spi, OutputPin, OutputPin>) {
                             msg3_receivers,
                             lora,
                             enc_keys.as_static_material,
+                            fcntdownmap
                         );
                         msg3_receivers = rtn.msg3_receivers;
                         lora = rtn.lora;
+                        fcntdownmap = rtn.fcntdownmap
                     }
                     2 => {
                         println!("Recieved m type 2");
-                        let rtn = edhoc::handle_m_type_two(
-                            buffer,
-                            msg3_receivers,
-                            connections,
-                            lora,
-                        );
+                        let rtn =
+                            edhoc::handle_m_type_two(buffer, msg3_receivers, connections, lora, fcntdownmap);
                         msg3_receivers = rtn.msg3_receivers;
                         connections = rtn.connections;
                         lora = rtn.lora;
+                        fcntdownmap = rtn.fcntdownmap
                     }
                     5 => {
                         println!("Recieved m type 5");
                         let incoming = &buffer;
-                        let rtn = handle_ratchet_message(
-                            incoming.to_vec(),
-                            lora,
-                            connections,
-                        );
+                        let rtn = handle_ratchet_message(incoming.to_vec(), lora, connections);
                         lora = rtn.lora;
                         connections = rtn.connections;
                     }
                     7 => {
                         println!("Recieved m type 7");
                         let incoming = &buffer;
-                        let rtn = handle_ratchet_message(
-                            incoming.to_vec(),
-                            lora,
-                            connections,
-                        );
+                        let rtn = handle_ratchet_message(incoming.to_vec(), lora, connections);
                         lora = rtn.lora;
                         connections = rtn.connections;
                     }
@@ -137,21 +125,15 @@ fn handle_ratchet_message(
                     println!("error has happened {:?}", incoming);
                     println!("Error message {:?}", x);
                     connections.insert(devaddr, lora_ratchet);
-                    return RatchetMessage {
-                        lora,
-                        connections,
-                    };
+                    return RatchetMessage { lora, connections };
                 }
             };
             if sendnew {
-               lora_handler::lora_send(&mut lora, newout);
+                lora_handler::lora_send(&mut lora, newout);
             }
             connections.insert(devaddr, lora_ratchet);
         }
         None => println!("No ratchet on this devaddr"),
     }
-    RatchetMessage {
-        lora,
-        connections,
-    }
+    RatchetMessage { lora, connections }
 }
