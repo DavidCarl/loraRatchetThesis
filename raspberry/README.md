@@ -26,11 +26,11 @@ Raspberry Pi <-> SX1276
 
 | Pin | name       |      | Name  |
 |-----|------------|------|-------|
-| 06  | GPIO22     | <->  | GND   |
-| 15  | 3.3        | <->  | RST   |
-| 17  | SPI_MOSI   | <->  | VDD   |
-| 19  | SPI_MISO   | <->  | MOSI  |
-| 21  | SPI_CLK    | <->  | MISO  |
+| 06  | GND        | <->  | GND   |
+| 15  | GPIO22     | <->  | RST   |
+| 17  | 3.3        | <->  | VDD   |
+| 19  | SPI_MOSI   | <->  | MOSI  |
+| 21  | SPI_MISO   | <->  | MISO  |
 | 23  | SPI_CLK    | <->  | SCK   |
 | 24  | SPI_CE0_N  | <->  | NSS   |
 
