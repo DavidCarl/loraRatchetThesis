@@ -7,7 +7,7 @@ use rppal::spi::{Bus, Mode, SlaveSelect, Spi};
 
 const LORA_CS_PIN: u8 = 8;
 const LORA_RESET_PIN: u8 = 22;
-const FREQUENCY: i64 = 915;
+const FREQUENCY: i64 = 868;
 
 
 /// This function creates a sx127x object, which enables us to send and recieve messages by
@@ -26,6 +26,7 @@ pub fn setup_sx127x(bandwidth: i64, spreadfactor: u8) -> LoRa<Spi, OutputPin, Ou
     let reset = gpio.get(LORA_RESET_PIN).unwrap().into_output();
 
     let mut lora = sx127x_lora::LoRa::new(spi, cs, reset, FREQUENCY, &mut Delay).unwrap();
+    let _ = lora.set_tx_power(14,1);
     let _ = lora.set_signal_bandwidth(bandwidth);
     let _ = lora.set_spreading_factor(spreadfactor);
     lora
