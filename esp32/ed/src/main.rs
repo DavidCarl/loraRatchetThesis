@@ -22,7 +22,7 @@ use crate::hrng::HRNG;
 mod edhoc;
 mod hrng;
 mod wifihandler;
-const DHR_CONST: u16 = 256;
+const DHR_CONST: u16 = 256; // can be set depending on experiment performed
 
 
 fn main() -> Result<()> {
@@ -71,7 +71,8 @@ fn handle_connection(stream: &mut TcpStream) -> Result<(), Error> {
     );
 
     // running continous communications, with a 1 second thread sleep
-    // For every iteration, a uplink message is sent, and the
+    // For every iteration, a uplink message is sent, and the FCntUp is checked for equality with DHR_CONST.
+    // If the limit is reached, a ratchet is run.
     stream
         .set_read_timeout(Some(Duration::from_millis(5000)))?;
     loop {

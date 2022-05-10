@@ -22,6 +22,7 @@ pub fn run(
     dhr_const: u16,
     config: Config,
 ) {
+
     let ed_ratchet = EDRatchet::new(
         ratchetkeys.ed_rk.try_into().unwrap(),
         ratchetkeys.ed_rck.try_into().unwrap(),
@@ -56,7 +57,7 @@ fn loraratchet_main_loop(
                     Some(y) => {
                         println!("receiving message from server {:?}", y)
                     }
-                    None => println!("test"),
+                    None => println!("Ratchet step performed"),
                 },
                 Err(x) => {
                     println!("{:?}", x)
