@@ -180,7 +180,7 @@ fn edhoc_third_message(
             let payload3 = prepare_message(msg3_bytes, 2, Some(msg_struc.devaddr));
             Ok((payload3, msg4_receiver_verifier))
         }
-        None => panic!("No key on KID"),
+        None => Err(OwnOrPeerError::OwnError(b"No key found for identity".to_vec())),
     }
 }
 

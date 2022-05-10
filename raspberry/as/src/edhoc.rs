@@ -73,7 +73,7 @@ pub fn handle_m_type_zero(
                 lora_send(&mut lora, x);
             }
             OwnOrPeerError::PeerError(x) => {
-                println!("Error in m_type_zero {:?}", x)
+                println!("Error in received m_type_zero {:?}", x)
             }
         },
     }
@@ -139,7 +139,7 @@ pub fn handle_m_type_two(
                 lora_send(&mut lora, x);
             }
             OwnOrPeerError::PeerError(x) => {
-                println!("Error in m_type_two {:?}", x)
+                println!("Error received in m_type_two {:?}", x)
             }
         },
     }
@@ -237,6 +237,6 @@ fn handle_third_gen_fourth_message(
             })
             
         }
-        None => panic!("Missing kid value"),
+        None => Err(OwnOrPeerError::OwnError(b"No key found for identity".to_vec())),
     }
 }
