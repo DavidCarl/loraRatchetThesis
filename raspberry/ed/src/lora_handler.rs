@@ -1,4 +1,4 @@
-use sx127x_lora::LoRa;
+use sx127x_lora::{LoRa, RadioMode};
 use std::{thread, time};
 use rppal::gpio::{Gpio, OutputPin};
 
@@ -11,6 +11,8 @@ use crate::filehandling::Config;
 const LORA_CS_PIN: u8 = 8;
 const LORA_RESET_PIN: u8 = 22;
 const FREQUENCY: i64 = 868;
+
+// EUI64 mac addresser - for appeui og deveui
 
 /// This function creates a sx127x object, which enables us to send and recieve messages by
 /// using the sx1276 lora module.
@@ -28,7 +30,7 @@ pub fn setup_sx127x(bandwidth: i64, spreadfactor: u8) -> LoRa<Spi, OutputPin, Ou
     let reset = gpio.get(LORA_RESET_PIN).unwrap().into_output();
 
     let mut lora = sx127x_lora::LoRa::new(spi, cs, reset, FREQUENCY, &mut Delay).unwrap();
-    let _ = lora.set_tx_power(14,1);
+    let _ = lora.set_tx_power(17,1);
     let _ = lora.set_signal_bandwidth(bandwidth);
     let _ = lora.set_spreading_factor(spreadfactor);
     lora
@@ -59,7 +61,10 @@ pub fn recieve_window(lora: &mut LoRa<Spi, OutputPin, OutputPin>, config: Config
             buffer
         }
         Err(_) => {
-            thread::sleep(time::Duration::from_millis(config.rx1_delay));
+            println!("Putting in sleep mode");
+            let _ = lora.set_mode(RadioMode::Sleep);
+            thread::sleep(time::Duration::from_millis(config.rx2_delay));
+            println!("Waking up from sleep mode");
             let poll = lora.poll_irq(Some(config.rx1_duration), &mut Delay);
             match poll {
                 Ok(size) => {

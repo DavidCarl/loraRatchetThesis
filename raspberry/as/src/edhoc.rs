@@ -23,6 +23,7 @@ use crate::{
     phypayload_handler::{prepare_message, unwrap_message},
 };
 
+const DEVEUI: [u8; 8] = [1, 1, 2, 3, 4, 5, 6, 7];
 const APPEUI: [u8; 8] = [0, 1, 2, 3, 4, 5, 6, 7];
 
 pub struct TypeZero {
@@ -171,7 +172,7 @@ fn handle_first_gen_second_message(
     msg: Vec<u8>,
     msg1_receiver: PartyR<Msg1Receiver>,
 ) -> Result<Msg2, OwnOrPeerError> {
-    let (msg2_sender, _deveui, appeui) = match msg1_receiver.handle_message_1_ead(msg) {
+    let (msg2_sender, deveui, appeui) = match msg1_receiver.handle_message_1_ead(msg) {
         Err(OwnError(b)) => {
             return Err(OwnOrPeerError::OwnError(b));
         }
@@ -181,8 +182,13 @@ fn handle_first_gen_second_message(
     if appeui.unwrap() != APPEUI {
         return Err(OwnOrPeerError::PeerError("Wrong APPEUI".to_string()));
     }
-    
+    println!("{:?} {:?}", deveui, DEVEUI);
+    if deveui != DEVEUI {
+        return Err(OwnOrPeerError::PeerError("Wrong DEVEUI".to_string()));
+    }
+
     let (msg2_bytes, msg3_receiver) =  msg2_sender.generate_message_2(APPEUI.to_vec(), None)?;
+    println!("{:?}", msg2_bytes);
     let devaddr: [u8; 4] = rand::random();
     
     let (msg, _fcntdown) = prepare_message(msg2_bytes, 1, Some(devaddr), 0);
@@ -222,6 +228,7 @@ fn handle_third_gen_fourth_message(
     for each in enc_keys.ed_keys {
         if each.kid.to_vec() == ed_kid {
             opt_ed_static_pub = Some(PublicKey::from(each.ed_static_material));
+            println!("{:?}", opt_ed_static_pub)
         }
     }
     match opt_ed_static_pub {

@@ -82,11 +82,7 @@ fn loraratchet_main_loop(
                     
                 }
         }
-        let lora_set_mode = lora.set_mode(RadioMode::Sleep);
-        match lora_set_mode {
-            Ok(_) => (),
-            Err(_) => (),
-        }
+        let _ = lora.set_mode(RadioMode::Sleep);
         thread::sleep(time::Duration::from_millis(10000));
     }
 }
