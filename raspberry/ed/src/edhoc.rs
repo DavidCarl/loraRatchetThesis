@@ -150,6 +150,9 @@ fn edhoc_third_message(
 ) -> Result<(Vec<u8>, PartyI<Msg4ReceiveVerify>), OwnOrPeerError> {
     let msg_struc = unwrap_message(msg2);
 
+    println!("{:?}", msg_struc.msg.len());
+    println!("{:?}", msg_struc.msg);
+
     let (as_kid, _ad_r, msg2_verifier) = msg2_receiver.unpack_message_2_return_kid(msg_struc.msg)?;
 
     let enc_keys: StaticKeys = load_static_keys("./keys.json".to_string());
@@ -157,14 +160,17 @@ fn edhoc_third_message(
     for each in enc_keys.as_keys {
         if each.kid.to_vec() == as_kid {
             opt_as_static_pub = Some(PublicKey::from(each.as_static_material));
+            println!("{:?}", opt_as_static_pub)
         }
     }
 
     match opt_as_static_pub {
         Some(as_static_pub) => {
+            println!("Hello");
             let msg3_sender =
                 match msg2_verifier.verify_message_2(as_static_pub.as_bytes()) {
                     Err(OwnError(b)) => {
+                        println!("Hello verify");
                         return Err(OwnOrPeerError::OwnError(b));
                     }
                     Ok(val) => val,
@@ -172,6 +178,7 @@ fn edhoc_third_message(
 
             let (msg4_receiver_verifier, msg3_bytes) = match msg3_sender.generate_message_3(None) {
                 Err(OwnError(b)) => {
+                    println!("Hello");
                     return Err(OwnOrPeerError::OwnError(b));
                 }
                 Ok(val) => val,
@@ -199,4 +206,13 @@ fn handle_message_fourth(
     let (ed_sck, ed_rck, ed_rk) = msg4_receiver_verifier.handle_message_4(msg_struct.msg)?;
     Ok(FourthMessage{ed_sck, ed_rck, ed_rk, devaddr: msg_struct.devaddr.to_vec()})
 
+}
+
+fn hexstring(slice: &[u8]) -> String {
+    String::from("0x")
+        + &slice
+            .iter()
+            .map(|n| format!("{:02X}", n))
+            .collect::<Vec<String>>()
+            .join(", 0x")
 }
