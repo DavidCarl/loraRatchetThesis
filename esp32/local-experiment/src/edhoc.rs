@@ -21,8 +21,8 @@ const AS_STATIC_MATERIAL: [u8; 32] = [
 const DEVEUI: [u8; 8] = [0x1, 1, 2, 3, 2, 4, 5, 7];
 const APPEUI: [u8; 8] = [0, 1, 2, 3, 4, 5, 6, 7];
 
-const SUITE_I: u8 = 3;
-const METHOD_TYPE_I: u8 = 0;
+const SUITE_I: u8 = 0;
+const METHOD_TYPE_I: u8 = 3;
 
 pub fn join() -> (
     Vec<u8>,
