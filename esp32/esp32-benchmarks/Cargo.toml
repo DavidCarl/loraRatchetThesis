@@ -1,0 +1,36 @@
+[package]
+name = "esp32_benchmarks"
+version = "0.1.0"
+authors = ["asse <asse@itu.dk>"]
+edition = "2018"
+resolver = "2"
+
+[profile.release]
+opt-level = "s"
+
+[profile.dev]
+debug = true # Symbols are nice and they don't increase the size on Flash
+opt-level = "z"
+
+[features]
+pio = ["esp-idf-sys/pio"]
+
+[dependencies]
+esp-idf-sys = { version = "0.31", features = ["binstart"] }
+esp-idf-hal = "0.36.0"
+embedded-hal = "0.2.7"
+edhoc  = { git = "https://github.com/DavidCarl/edhoc" }
+coap-lite = { version = "0.9.0", default-features = false }
+serde = { version = "1.0.97", default-features = false, features = ["derive", "alloc"] }
+serde_cbor = { version = "0.11.2", default-features = false, features = ["alloc"] }
+serde_bytes = { version = "0.11.1", default-features = false, features = ["alloc"] }
+x25519-dalek-ng = { version = "1.1.1", default-features = false, features = ["u32_backend"] }
+doubleratchet =  { git = "https://github.com/S3j5b0/Double_ratchet" }
+esp-idf-svc = "0.40.0"
+embedded-svc = "0.20.3"
+rand_core = {version = "0.6"}
+rand = "*"
+
+[build-dependencies]
+embuild = "0.28"
+anyhow = "1"
