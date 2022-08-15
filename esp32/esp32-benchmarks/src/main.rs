@@ -126,7 +126,7 @@ fn main() {
 
     let (msg4_sender, as_sck, as_rck, as_rk) = bench("msg3_verify",|| msg3verifier.verify_message_3(pub_st_i.as_bytes())).unwrap();
 
-
+ 
     let msg4_bytes = bench("msg4_generate",|| msg4_sender.generate_message_4(None)).unwrap();
     
     
@@ -173,14 +173,15 @@ fn main() {
 
     let mut ed_ratchet = EDRatchet::new(SK,UPLINK,DOWNLINK, DEVADDR, HRNG);
     let mut as_ratchet = ASRatchet::new(SK, DOWNLINK, UPLINK, DEVADDR, HRNG);
+    let old_message = as_ratchet.ratchet_encrypt_payload(b"lostMessage");
     let dhr_req = ed_ratchet.initiate_ratch();
     let dhr_ack = as_ratchet.receive(dhr_req).unwrap().0;
     let none = ed_ratchet.receive(dhr_ack).unwrap();
     assert_eq!(none,None);
-    let _lost_uplink = ed_ratchet.ratchet_encrypt_payload(b"lostMessage");
-    let ciphertext = ed_ratchet.ratchet_encrypt_payload(b"message");
+    let lost_uplink = ed_ratchet.ratchet_encrypt_payload(b"ack uplink");
+    let _none = as_ratchet.receive(lost_uplink).unwrap();
 
-    let _decrypted = bench("as_skip_dhrp", || as_ratchet.receive(ciphertext).unwrap());
+    let _decrypted = bench("ed_old_dhrp", || ed_ratchet.receive(old_message).unwrap());
 }
 
  
