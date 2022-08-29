@@ -208,11 +208,3 @@ fn handle_message_fourth(
 
 }
 
-fn hexstring(slice: &[u8]) -> String {
-    String::from("0x")
-        + &slice
-            .iter()
-            .map(|n| format!("{:02X}", n))
-            .collect::<Vec<String>>()
-            .join(", 0x")
-}
